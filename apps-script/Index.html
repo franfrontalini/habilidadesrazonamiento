@@ -54,12 +54,12 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 main { max-width: 1180px; margin: 0 auto; padding: 16px 16px 96px; outline: none; }
 h1, h2, h3 { line-height: 1.25; }
-h1 { font-size: 1.6rem; margin: .5rem 0 1rem; }
-h2 { font-size: 1.25rem; margin: 1.5rem 0 .75rem; }
+h1 { font-size: 1.5rem; margin: .5rem 0 1rem; }
+h2 { font-size: 1.2rem; margin: 1.5rem 0 .75rem; }
 h3 { font-size: 1.05rem; margin: 1rem 0 .5rem; }
 p, li { max-width: var(--read-width); }
 a { color: var(--accent); }
@@ -116,7 +116,8 @@ select {
 .tests { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
 .test-card { display: flex; flex-direction: column; gap: 6px; }
 .test-card h3 { margin: 0; }
-.test-card .meta { color: var(--muted); font-size: .95rem; }
+.test-card .meta { color: var(--muted); font-size: .95rem; margin: 0; }
+.test-card .resumen { margin: .25rem 0 0; font-size: .95rem; }
 .test-card .actions { margin-top: auto; padding-top: 8px; }
 .badge { display: inline-block; font-size: .8rem; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
 .badge.warn { background: var(--warn-soft); color: var(--warn); }
@@ -237,7 +238,7 @@ dialog h2 { margin-top: 0; }
 .dlg-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin-top: 18px; }
 
 @media (max-width: 600px) {
-  body { font-size: 16.5px; }
+  body { font-size: 15.5px; }
   .card, .question { padding: 16px; }
   .test-bar .title { flex-basis: 100%; }
   table.quantities th, table.quantities td { padding: 8px 6px; }
@@ -328,6 +329,7 @@ dialog h2 { margin-top: 0; }
     id: 'cuantitativo',
     titulo: 'Razonamiento cuantitativo',
     minutos: 45,
+    resumen: 'Comparar cantidades y resolver problemas con conceptos matemáticos básicos. Se valora el razonamiento más que el cálculo: no se usa calculadora.',
     proposito: 'Mide la habilidad para usar conceptos matemáticos básicos en situaciones que exigen sentido común y discernimiento. No es un examen de matemática: en la mayoría de los casos se trata de interpretar datos y llegar a la respuesta con recursos mínimos.',
     reglasExtra: [
       'No se permite el uso de calculadora. Podés usar papel para notas y cálculos.',
@@ -446,6 +448,7 @@ dialog h2 { margin-top: 0; }
     id: 'ludico',
     titulo: 'Razonamiento lúdico',
     minutos: 30,
+    resumen: 'Deducir conclusiones a partir de un conjunto de reglas sobre situaciones ficticias, como un fixture de partidos o la asignación de personas a oficinas.',
     proposito: 'Explora la habilidad para entender una estructura de relaciones entre personas, lugares, objetos o eventos ficticios, deducir nueva información a partir de esas relaciones y tomar decisiones que respeten las condiciones del problema.',
     reglasExtra: [
       'Las preguntas se agrupan en dos situaciones. Las reglas de cada situación se muestran junto a sus preguntas y podés volver a consultarlas en cualquier momento.',
@@ -504,6 +507,7 @@ dialog h2 { margin-top: 0; }
     id: 'verbal',
     titulo: 'Razonamiento verbal',
     minutos: 40,
+    resumen: 'Comprender textos y analizar argumentos: reconocer la idea principal, los supuestos y las conclusiones que se pueden extraer.',
     proposito: 'Mide la habilidad para razonar en situaciones en las que el uso del lenguaje es crucial para resolver problemas: comprensión de textos y análisis de argumentos.',
     reglasExtra: [
       'Parte A (preguntas 1 a 11): un texto corto con 4 preguntas y un texto largo con 7 preguntas. Los textos completos quedan disponibles durante toda la prueba.',
@@ -870,6 +874,7 @@ dialog h2 { margin-top: 0; }
         var hecha = (leer(sesion, 'hechas') || []).indexOf(id) >= 0;
         return '<article class="card test-card"><h3>' + esc(t.titulo) + '</h3>' +
           '<p class="meta">' + cp.items + ' preguntas · ' + cp.minutos + ' minutos</p>' +
+          '<p class="resumen">' + esc(t.resumen) + '</p>' +
           (hecha ? '<p><span class="badge">Entregada en esta sesión</span></p>' : '') +
           (!cp.habilitada ? '<p><span class="badge warn">No habilitada</span></p>' : '') +
           '<div class="actions"><button class="btn" data-accion="abrir" data-prueba="' + id + '"' +

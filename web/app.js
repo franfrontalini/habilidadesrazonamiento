@@ -227,6 +227,7 @@
         var hecha = (leer(sesion, 'hechas') || []).indexOf(id) >= 0;
         return '<article class="card test-card"><h3>' + esc(t.titulo) + '</h3>' +
           '<p class="meta">' + cp.items + ' preguntas · ' + cp.minutos + ' minutos</p>' +
+          '<p class="resumen">' + esc(t.resumen) + '</p>' +
           (hecha ? '<p><span class="badge">Entregada en esta sesión</span></p>' : '') +
           (!cp.habilitada ? '<p><span class="badge warn">No habilitada</span></p>' : '') +
           '<div class="actions"><button class="btn" data-accion="abrir" data-prueba="' + id + '"' +

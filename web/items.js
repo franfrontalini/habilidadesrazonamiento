@@ -50,6 +50,7 @@
     id: 'cuantitativo',
     titulo: 'Razonamiento cuantitativo',
     minutos: 45,
+    resumen: 'Comparar cantidades y resolver problemas con conceptos matemáticos básicos. Se valora el razonamiento más que el cálculo: no se usa calculadora.',
     proposito: 'Mide la habilidad para usar conceptos matemáticos básicos en situaciones que exigen sentido común y discernimiento. No es un examen de matemática: en la mayoría de los casos se trata de interpretar datos y llegar a la respuesta con recursos mínimos.',
     reglasExtra: [
       'No se permite el uso de calculadora. Podés usar papel para notas y cálculos.',
@@ -168,6 +169,7 @@
     id: 'ludico',
     titulo: 'Razonamiento lúdico',
     minutos: 30,
+    resumen: 'Deducir conclusiones a partir de un conjunto de reglas sobre situaciones ficticias, como un fixture de partidos o la asignación de personas a oficinas.',
     proposito: 'Explora la habilidad para entender una estructura de relaciones entre personas, lugares, objetos o eventos ficticios, deducir nueva información a partir de esas relaciones y tomar decisiones que respeten las condiciones del problema.',
     reglasExtra: [
       'Las preguntas se agrupan en dos situaciones. Las reglas de cada situación se muestran junto a sus preguntas y podés volver a consultarlas en cualquier momento.',
@@ -226,6 +228,7 @@
     id: 'verbal',
     titulo: 'Razonamiento verbal',
     minutos: 40,
+    resumen: 'Comprender textos y analizar argumentos: reconocer la idea principal, los supuestos y las conclusiones que se pueden extraer.',
     proposito: 'Mide la habilidad para razonar en situaciones en las que el uso del lenguaje es crucial para resolver problemas: comprensión de textos y análisis de argumentos.',
     reglasExtra: [
       'Parte A (preguntas 1 a 11): un texto corto con 4 preguntas y un texto largo con 7 preguntas. Los textos completos quedan disponibles durante toda la prueba.',
