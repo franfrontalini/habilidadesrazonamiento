@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- URL del despliegue de Apps Script, solo si la app se aloja fuera de Apps Script.
+       Vacío + abierto localmente = modo demostración (no envía nada). -->
+  <meta name="adm-endpoint" content="">
+  <title>Diagnóstico de razonamiento · UTN</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#app">Saltar al contenido</a>
+  <div id="demo-banner" class="demo-banner" hidden>
+    Modo demostración: las respuestas no se envían a ningún servidor.
+  </div>
+  <main id="app" tabindex="-1">
+    <p class="loading">Cargando…</p>
+    <noscript>Esta aplicación necesita JavaScript habilitado.</noscript>
+  </main>
+  <div id="sr-live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <div id="sr-alert" class="sr-only" role="alert" aria-atomic="true"></div>
+
+  <dialog id="dlg" aria-labelledby="dlg-title" aria-describedby="dlg-body">
+    <h2 id="dlg-title"></h2>
+    <div id="dlg-body"></div>
+    <div class="dlg-actions" id="dlg-actions"></div>
+  </dialog>
+
+  <script src="items.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
