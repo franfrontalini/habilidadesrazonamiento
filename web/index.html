@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- URL del despliegue de Apps Script, solo si la app se aloja fuera de Apps Script.
-       Vacío + abierto localmente = modo demostración (no envía nada). -->
-  <meta name="adm-endpoint" content="">
+  <!-- URL del web app de Apps Script (/exec). Vacío = modo demostración (no envía nada).
+       Al empaquetar para Apps Script (tools/build.mjs) se vacía: allí se usa google.script.run. -->
+  <meta name="adm-endpoint" content="https://script.google.com/macros/s/AKfycbxphro7fCM4X6hc3OILZ6rqdETnppSdbJthvHeFShtG07scTrv3sZAgCCoYEf8JAbkT/exec">
   <title>Diagnóstico de razonamiento · UTN</title>
   <link rel="stylesheet" href="styles.css">
 </head>
