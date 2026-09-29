@@ -1,0 +1,1370 @@
+<!-- ARCHIVO GENERADO por tools/build.mjs a partir de web/. No editar a mano. -->
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <!-- URL del despliegue de Apps Script, solo si la app se aloja fuera de Apps Script.
+       Vacío + abierto localmente = modo demostración (no envía nada). -->
+  <meta name="adm-endpoint" content="">
+  <title>Diagnóstico de razonamiento · UTN</title>
+  <style>
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #eef1f5;
+  --text: #1b1f24;
+  --muted: #56606b;
+  --border: #d5dae1;
+  --accent: #1f5fae;
+  --accent-contrast: #ffffff;
+  --accent-soft: #e3edf9;
+  --ok: #1d7a46;
+  --warn: #9a5b00;
+  --warn-soft: #fff4e0;
+  --danger: #b3261e;
+  --danger-soft: #fdecea;
+  --focus: #f0a500;
+  --radius: 10px;
+  --read-width: 70ch;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111418;
+    --surface: #1a1f25;
+    --surface-2: #232a32;
+    --text: #e7eaee;
+    --muted: #a3adb8;
+    --border: #36404b;
+    --accent: #7fb0f0;
+    --accent-contrast: #0c1726;
+    --accent-soft: #1d2d42;
+    --ok: #6fd39b;
+    --warn: #f3b760;
+    --warn-soft: #3a2b12;
+    --danger: #ff8a80;
+    --danger-soft: #3d1c1a;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+main { max-width: 1180px; margin: 0 auto; padding: 16px 16px 96px; outline: none; }
+h1, h2, h3 { line-height: 1.25; }
+h1 { font-size: 1.6rem; margin: .5rem 0 1rem; }
+h2 { font-size: 1.25rem; margin: 1.5rem 0 .75rem; }
+h3 { font-size: 1.05rem; margin: 1rem 0 .5rem; }
+p, li { max-width: var(--read-width); }
+a { color: var(--accent); }
+.muted { color: var(--muted); }
+.loading { color: var(--muted); }
+
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+.sr-only {
+  position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.skip-link { position: absolute; left: 8px; top: -48px; background: var(--surface); padding: 8px 12px; z-index: 50; border-radius: 6px; }
+.skip-link:focus { top: 8px; }
+.demo-banner { background: var(--warn-soft); color: var(--warn); text-align: center; padding: 6px 12px; font-size: .9rem; }
+
+/* ---------- Tarjetas y formularios ---------- */
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 20px; margin: 16px 0;
+}
+.notice { background: var(--accent-soft); border-radius: var(--radius); padding: 14px 16px; margin: 16px 0; }
+.notice.warn { background: var(--warn-soft); color: var(--text); border-left: 4px solid var(--warn); }
+.notice.danger { background: var(--danger-soft); border-left: 4px solid var(--danger); }
+.notice p { margin: .25rem 0; }
+
+fieldset { border: 0; padding: 0; margin: 0 0 18px; min-width: 0; }
+legend { font-weight: 600; margin-bottom: 8px; padding: 0; }
+.choice-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { position: relative; }
+.chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.chip span {
+  display: inline-block; padding: 8px 16px; border: 1px solid var(--border); border-radius: 999px;
+  background: var(--surface); cursor: pointer; user-select: none;
+}
+.chip input:checked + span { background: var(--accent); color: var(--accent-contrast); border-color: var(--accent); }
+.chip input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: 2px; }
+select {
+  font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px; width: 100%; max-width: 480px;
+}
+
+.btn {
+  font: inherit; font-weight: 600; cursor: pointer; border-radius: 8px; padding: 10px 18px;
+  border: 1px solid var(--accent); background: var(--accent); color: var(--accent-contrast);
+  min-height: 44px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
+}
+.btn.secondary { background: transparent; color: var(--accent); }
+.btn.ghost { background: transparent; border-color: transparent; color: var(--accent); padding-inline: 8px; }
+.btn.danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; align-items: center; }
+
+.tests { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.test-card { display: flex; flex-direction: column; gap: 6px; }
+.test-card h3 { margin: 0; }
+.test-card .meta { color: var(--muted); font-size: .95rem; }
+.test-card .actions { margin-top: auto; padding-top: 8px; }
+.badge { display: inline-block; font-size: .8rem; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
+.badge.warn { background: var(--warn-soft); color: var(--warn); }
+
+dl.facts { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0; }
+dl.facts dt { color: var(--muted); }
+dl.facts dd { margin: 0; font-weight: 600; }
+
+/* ---------- Barra de la prueba ---------- */
+.test-bar {
+  position: sticky; top: 0; z-index: 10; background: var(--surface); border-bottom: 1px solid var(--border);
+  margin: -16px -16px 16px; padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center;
+}
+.test-bar .title { font-weight: 700; margin-right: auto; }
+.timer {
+  font-variant-numeric: tabular-nums; font-weight: 700; font-size: 1.15rem; padding: 4px 12px;
+  border-radius: 8px; background: var(--surface-2);
+}
+.timer.warn { background: var(--warn-soft); color: var(--warn); }
+.timer.danger { background: var(--danger-soft); color: var(--danger); }
+.progress { color: var(--muted); font-size: .95rem; }
+
+/* ---------- Layout pregunta + material ---------- */
+.test-layout { display: grid; gap: 20px; }
+.test-layout.with-material { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 960px) {
+  .test-layout.with-material { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: start; }
+  .material { position: sticky; top: 76px; max-height: calc(100vh - 96px); overflow: auto; }
+  .material-toggle { display: none !important; }
+  .material .material-body[hidden] { display: block !important; }
+}
+.material {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px;
+}
+.material h2 { margin: 0 0 .5rem; font-size: 1.05rem; }
+.material-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.material-body { font-size: 1rem; line-height: 1.7; }
+.material-body p { text-indent: 0; }
+.material-body strong { background: var(--accent-soft); padding: 0 2px; border-radius: 3px; }
+ul.rules { padding-left: 1.2em; }
+ul.rules li { margin: .3rem 0; }
+@media (max-width: 959px) {
+  .material-body { max-height: 55vh; overflow: auto; }
+}
+
+.question { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+.part-head { font-size: .95rem; margin-bottom: 12px; }
+.part-head summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+.part-head .consigna { color: var(--muted); margin: .5rem 0 0; }
+.q-number { font-size: 1.1rem; font-weight: 700; margin: 0 0 10px; }
+.stem { margin-bottom: 16px; }
+.stem p { margin: .5rem 0; }
+.common { text-align: center; margin: 8px 0 14px; }
+table.quantities { width: 100%; border-collapse: collapse; margin: 6px 0 18px; table-layout: fixed; }
+table.quantities th, table.quantities td { border: 1px solid var(--border); padding: 10px 12px; text-align: center; vertical-align: middle; }
+table.quantities th { background: var(--surface-2); }
+blockquote.stimulus { margin: 0 0 14px; padding: 10px 16px; border-left: 4px solid var(--accent); background: var(--surface-2); border-radius: 0 8px 8px 0; }
+blockquote.stimulus p { margin: .4rem 0; }
+ol.roman { list-style: upper-roman; padding-left: 2.4em; }
+ol.roman li { margin: .3rem 0; }
+
+.options { display: grid; gap: 8px; }
+.option {
+  display: grid; grid-template-columns: auto auto 1fr; gap: 10px; align-items: center;
+  border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; cursor: pointer; background: var(--surface);
+}
+.option:hover { border-color: var(--accent); }
+.option input { width: 20px; height: 20px; margin: 0; accent-color: var(--accent); }
+.option .letter { font-weight: 700; min-width: 1.4em; }
+.option:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+.q-nav { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; margin-top: 18px; }
+.q-nav [data-accion=limpiar] { justify-self: center; }
+@media (max-width: 480px) {
+  .q-nav { grid-template-columns: 1fr 1fr; }
+  .q-nav [data-accion=sig] { grid-column: 2; grid-row: 1; justify-content: center; }
+  .q-nav [data-accion=ant] { justify-content: center; }
+  .q-nav [data-accion=limpiar] { grid-column: 1 / -1; }
+}
+
+.grid-nav { margin-top: 20px; }
+.grid-nav ol { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.grid-nav button {
+  font: inherit; min-width: 44px; min-height: 44px; border-radius: 8px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text);
+}
+.grid-nav button.answered { background: var(--accent-soft); border-color: var(--accent); }
+.grid-nav button[aria-current="step"] { outline: 2px solid var(--accent); outline-offset: 1px; font-weight: 700; }
+.legend-keys { display: flex; gap: 14px; font-size: .85rem; color: var(--muted); margin-top: 8px; flex-wrap: wrap; }
+.legend-keys span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; border: 1px solid var(--border); }
+.legend-keys .k-ans::before { background: var(--accent-soft); border-color: var(--accent); }
+
+/* ---------- Revisión ---------- */
+table.review { width: 100%; border-collapse: collapse; }
+table.review th, table.review td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+table.review td.missing { color: var(--warn); font-weight: 600; }
+.review-wrap { overflow-x: auto; }
+
+/* ---------- Matemática ---------- */
+.math { font-family: "Cambria Math", "STIX Two Math", "Times New Roman", serif; font-size: 1.12em; white-space: nowrap; }
+.math i { font-style: italic; }
+.math sup { font-size: .7em; line-height: 0; }
+.math-block { text-align: left; }
+.math-frac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; margin: 0 .15em; line-height: 1.2; }
+.math-frac .num { border-bottom: 1px solid currentColor; padding: 0 .2em; }
+.math-frac .den { padding: 0 .2em; }
+.math-root { white-space: nowrap; }
+.math-root .idx { font-size: .6em; margin-right: -.45em; vertical-align: .9em; line-height: 0; }
+.math-root .rad { font-size: 1.1em; }
+.math-root .radicand { border-top: 1px solid currentColor; padding: 0 .1em; }
+
+/* ---------- Diálogo ---------- */
+dialog {
+  border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text);
+  max-width: min(560px, calc(100vw - 32px)); padding: 20px 22px;
+}
+dialog::backdrop { background: rgba(0, 0, 0, .45); }
+dialog h2 { margin-top: 0; }
+.dlg-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+
+@media (max-width: 600px) {
+  body { font-size: 16.5px; }
+  .card, .question { padding: 16px; }
+  .test-bar .title { flex-basis: 100%; }
+  table.quantities th, table.quantities td { padding: 8px 6px; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+
+/* ---------- Código de acceso y resultado ---------- */
+.code-input {
+  font: inherit; font-size: 1.3rem; letter-spacing: .15em; text-transform: uppercase;
+  color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 14px; width: 100%; max-width: 280px;
+}
+.code-input[aria-invalid="true"] { border-color: var(--danger); }
+.form-error { color: var(--danger); font-weight: 600; min-height: 1.6em; margin: .5rem 0 0; }
+.result-pct { margin: .25rem 0 .75rem; }
+.result-pct .big { display: block; font-size: 2.6rem; font-weight: 800; line-height: 1.1; color: var(--accent); }
+
+</style>
+</head>
+<body>
+  <a class="skip-link" href="#app">Saltar al contenido</a>
+  <div id="demo-banner" class="demo-banner" hidden>
+    Modo demostración: las respuestas no se envían a ningún servidor.
+  </div>
+  <main id="app" tabindex="-1">
+    <p class="loading">Cargando…</p>
+    <noscript>Esta aplicación necesita JavaScript habilitado.</noscript>
+  </main>
+  <div id="sr-live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <div id="sr-alert" class="sr-only" role="alert" aria-atomic="true"></div>
+
+  <dialog id="dlg" aria-labelledby="dlg-title" aria-describedby="dlg-body">
+    <h2 id="dlg-title"></h2>
+    <div id="dlg-body"></div>
+    <div class="dlg-actions" id="dlg-actions"></div>
+  </dialog>
+
+  <script>
+/*
+ * Contenido de las tres pruebas del "ADM Test C (práctica)".
+ * Transcripción fiel del PDF, en el mismo orden. NO contiene la clave de
+ * respuestas: la clave vive solo en el servidor (apps-script/Clave.gs).
+ *
+ * Las fórmulas se escriben en HTML (sup/sub, fracciones y raíces con CSS) y
+ * cada expresión matemática lleva una lectura textual para lectores de
+ * pantalla (clase .sr-only).
+ *
+ * Los campos `revision` documentan decisiones de transcripción para el
+ * equipo docente; no se muestran a los estudiantes.
+ */
+(function (root) {
+  'use strict';
+
+  // Fracción apilada con lectura accesible "num sobre den".
+  function frac(num, den, lectura) {
+    return '<span class="math-frac" aria-hidden="true"><span class="num">' + num +
+      '</span><span class="den">' + den + '</span></span><span class="sr-only">' +
+      (lectura || '(' + num + ') sobre (' + den + ')') + '</span>';
+  }
+  // Raíz con índice opcional y radicando con vínculo (overline).
+  function raiz(indice, radicando, lectura) {
+    return '<span class="math-root" aria-hidden="true">' +
+      (indice ? '<sup class="idx">' + indice + '</sup>' : '') +
+      '<span class="rad">√</span><span class="radicand">' + radicando + '</span></span>' +
+      '<span class="sr-only">' + lectura + '</span>';
+  }
+  function m(html) { return '<span class="math">' + html + '</span>'; }
+
+  var COMPARACION = [
+    { key: 'A', html: 'La cantidad A es mayor.' },
+    { key: 'B', html: 'La cantidad B es mayor.' },
+    { key: 'C', html: 'Las dos cantidades son iguales.' },
+    { key: 'D', html: 'Con la información provista no se puede determinar la relación.' }
+  ];
+  function op(a, b, c, d, e) {
+    var out = [];
+    var arr = [a, b, c, d, e];
+    for (var i = 0; i < arr.length; i++) {
+      if (arr[i] !== undefined) out.push({ key: 'ABCDE'.charAt(i), html: arr[i] });
+    }
+    return out;
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* 1. RAZONAMIENTO CUANTITATIVO                                        */
+  /* ------------------------------------------------------------------ */
+  var cuantitativo = {
+    id: 'cuantitativo',
+    titulo: 'Razonamiento cuantitativo',
+    minutos: 45,
+    proposito: 'Mide la habilidad para usar conceptos matemáticos básicos en situaciones que exigen sentido común y discernimiento. No es un examen de matemática: en la mayoría de los casos se trata de interpretar datos y llegar a la respuesta con recursos mínimos.',
+    reglasExtra: [
+      'No se permite el uso de calculadora. Podés usar papel para notas y cálculos.',
+      'Parte A (preguntas 1 a 10): comparación de cantidades, 4 opciones.',
+      'Parte B (preguntas 11 a 20): resolución de problemas, 5 opciones.'
+    ],
+    partes: {
+      A: {
+        titulo: 'Parte A · Comparación de cantidades',
+        consigna: 'Cada una de las preguntas 1 – 10 consiste en dos cantidades, <strong>CANTIDAD A</strong> y <strong>CANTIDAD B</strong>. Cuando existe información en común para ambas cantidades, ésta aparece en el centro, por encima de las dos cantidades. Usted debe comparar las cantidades A y B y responder con la opción (A, B, C, o D) que considere la mejor. Hay sólo <strong>UNA</strong> respuesta correcta para cada pregunta.'
+      },
+      B: {
+        titulo: 'Parte B · Resolución de problemas',
+        consigna: 'Cada una de las preguntas 11 – 20 tiene cinco opciones. Elija la que considere la mejor. Hay sólo <strong>UNA</strong> respuesta correcta para cada pregunta.'
+      }
+    },
+    grupos: {},
+    items: [
+      { n: 1, parte: 'A', comun: '',
+        cantidadA: m('<i>x</i><sup>2</sup> + <i>y</i>'),
+        cantidadB: m('<i>x</i><sup>2</sup> − <i>y</i>'),
+        opciones: COMPARACION },
+      { n: 2, parte: 'A',
+        comun: 'Para todo <i>x</i>, sea ' + m('<i>x</i><sup>2</sup> − 7<i>x</i> − 8 = (<i>x</i> − <i>p</i>)(<i>x</i> − <i>q</i>)'),
+        cantidadA: m('<i>p</i>'), cantidadB: m('<i>q</i>'), opciones: COMPARACION },
+      { n: 3, parte: 'A',
+        comun: 'El promedio (media aritmética) de 2 enteros positivos es igual a 31. Cada uno de los enteros es mayor que 26.',
+        cantidadA: 'El mayor de los dos enteros.', cantidadB: '36', opciones: COMPARACION },
+      { n: 4, parte: 'A',
+        comun: 'Para todo número real <i>p</i> y <i>r</i>, sea ' + m('<i>p</i> Ψ <i>r</i> = <i>pr</i> − <i>p</i> + <i>r</i>'),
+        cantidadA: m('(−4) Ψ 5'), cantidadB: m('5 Ψ (−4)'), opciones: COMPARACION,
+        revision: 'El operador del PDF es la letra griega Ψ (psi); se transcribió igual.' },
+      { n: 5, parte: 'A',
+        comun: 'Juana es más alta que Pedro y Pedro es más bajo que Laura',
+        cantidadA: 'La altura de Juana', cantidadB: 'La altura de Laura', opciones: COMPARACION },
+      { n: 6, parte: 'A', comun: '',
+        cantidadA: 'El menor entero positivo que es divisible por 14 y 21',
+        cantidadB: 'El menor entero positivo que es divisible por 14 y 28', opciones: COMPARACION },
+      { n: 7, parte: 'A', comun: '',
+        cantidadA: 'El valor del dato que se encuentra a 2,5 desvíos estándar de la media en un conjunto de datos cuyo desvío estándar es 3,0 y cuya media es 20,0',
+        cantidadB: '27,5', opciones: COMPARACION },
+      { n: 8, parte: 'A',
+        comun: m('2<sup><i>n</i>+1</sup> = 126') + '<span class="sr-only"> (2 elevado a la n más 1, igual a 126)</span>',
+        cantidadA: m('<i>n</i>'), cantidadB: '6', opciones: COMPARACION },
+      { n: 9, parte: 'A',
+        comun: m('<i>x</i> ≠ 2'),
+        cantidadA: m('−|<i>x</i> − 2|') + '<span class="sr-only"> (menos el valor absoluto de x menos 2)</span>',
+        cantidadB: m('|−<i>x</i> + 2|') + '<span class="sr-only"> (valor absoluto de menos x más 2)</span>',
+        opciones: COMPARACION },
+      { n: 10, parte: 'A',
+        comun: m('7<i>x</i> + 3<i>y</i> = 12') + '<br>' + m('21<i>x</i> + 9<i>y</i> = 36'),
+        cantidadA: m('<i>x</i>'), cantidadB: m('<i>y</i>'), opciones: COMPARACION },
+
+      { n: 11, parte: 'B',
+        enunciado: '<i>n</i> es un múltiplo de 5 y <i>n</i> es un múltiplo de 9. ¿Cuál(es) de las siguientes afirmaciones <strong><u>DEBE(N)</u></strong> ser verdadera(s)?' +
+          '<ol class="roman"><li>n es impar</li><li>n es igual a 45</li><li>n es múltiplo de 15</li></ol>',
+        opciones: op('Sólo I', 'Sólo II', 'Sólo III', 'I, II y III', 'Ninguna de las tres') },
+      { n: 12, parte: 'B',
+        enunciado: 'En una elección 20% de la gente que votó era del Partido X y el resto de los votantes era del Partido Y. Al decidir sobre cierto asunto todos los miembros votantes del Partido X votaron por NO y 60% del grupo total de votantes votaron por NO. ¿Qué porcentaje de los miembros del Partido Y votaron por NO?',
+        opciones: op('20%', '40%', '50%', '60%', '100%') },
+      { n: 13, parte: 'B',
+        enunciado: 'Si se define la operación <span class="math">*</span> de la siguiente manera:' +
+          '<p class="math-block">Para todo entero <i>m</i> tal que <i>m</i> es par, ' +
+          m('(<i>m</i>)<sup>*</sup> = ' + raiz('<i>m</i>', '−<i>m</i>', 'raíz de índice m de menos m')) + '</p>' +
+          '<p class="math-block">Para todo entero <i>m</i> tal que <i>m</i> es impar, ' +
+          m('(<i>m</i>)<sup>*</sup> = ' + raiz('<i>m</i>', '<i>m</i>', 'raíz de índice m de m')) + '</p>' +
+          'Entonces ¿cuál es el valor de ' + m('(2)<sup>*</sup> × (3)<sup>*</sup>') + '?',
+        opciones: op(
+          m(raiz('6', '6', 'raíz sexta de 6')),
+          m(raiz('', '2', 'raíz cuadrada de 2') + ' × ' + raiz('3', '3', 'raíz cúbica de 3')),
+          '6', '36', 'No tiene solución entre los números reales'),
+        revision: 'En el PDF el índice de la raíz de la opción B es muy pequeño; el texto extraído confirma √2 × ∛3.' },
+      { n: 14, parte: 'B',
+        enunciado: m('(2<i>uv</i>)<sup>2</sup> + (<i>u</i><sup>2</sup> − <i>v</i><sup>2</sup>)<sup>2</sup> =') +
+          '<span class="sr-only"> (2uv) al cuadrado más (u cuadrado menos v cuadrado) al cuadrado, igual a</span>',
+        opciones: op(
+          m('2<i>uv</i>'),
+          m('<i>u</i><sup>2</sup> − <i>v</i><sup>2</sup>'),
+          m('<i>u</i><sup>2</sup> + <i>v</i><sup>2</sup>'),
+          m('(2<i>uv</i>)<sup>2</sup> + (<i>u</i><sup>2</sup> + <i>v</i><sup>2</sup>)<sup>2</sup>'),
+          m('(<i>u</i><sup>2</sup> + <i>v</i><sup>2</sup>)<sup>2</sup>')) },
+      { n: 15, parte: 'B',
+        enunciado: 'María puede cortar el pasto de su jardín en <strong><i>x</i></strong> horas. Dos horas después de que María comenzara a cortar el pasto de su jardín comenzó a llover y María interrumpió su trabajo ¿Qué porción de su jardín quedó con el pasto sin cortar?',
+        opciones: op(
+          m(frac('2 − <i>x</i>', '<i>x</i>', '(2 menos x) sobre x')),
+          m(frac('<i>x</i>', '2', 'x sobre 2')),
+          m('<i>x</i> − 2'),
+          m(frac('<i>x</i> − 2', '2', '(x menos 2) sobre 2')),
+          m(frac('<i>x</i> − 2', '<i>x</i>', '(x menos 2) sobre x'))) },
+      { n: 16, parte: 'B',
+        enunciado: '<p class="math-block">Conjunto <i>S</i> de datos: 128, 119, 207, 116, 116, 107<br>Conjunto <i>R</i> de datos: 1579, 1548, 1600, 1567, 1500</p>¿En cuántas unidades es el rango del conjunto <i>S</i> mayor que el rango del conjunto <i>R</i>?',
+        opciones: op('0', '10', '20', '30', '35') },
+      { n: 17, parte: 'B',
+        enunciado: 'Si <i>a</i> y <i>b</i> son enteros positivos pares ¿cuál(es) de los siguientes valores <strong><u>DEBE(N)</u></strong> ser par(es)?' +
+          '<ol class="roman">' +
+          '<li>' + m('<i>a</i><sup><i>b</i></sup>') + '<span class="sr-only"> (a elevado a la b)</span></li>' +
+          '<li>' + m('(<i>a</i> + 1)<sup><i>b</i></sup>') + '<span class="sr-only"> (a más 1, elevado a la b)</span></li>' +
+          '<li>' + m('<i>a</i><sup>(<i>b</i>+1)</sup>') + '<span class="sr-only"> (a elevado a la b más 1)</span></li></ol>',
+        opciones: op('Sólo I', 'Sólo II', 'I y II solamente', 'I y III solamente', 'I, II y III') },
+      { n: 18, parte: 'B',
+        enunciado: 'La suma de dos números, <strong><i>x</i></strong> e <strong><i>y</i></strong>, es igual a dos veces su producto. Si <strong><i>x</i></strong> = 3 ¿cuál es el valor de <strong><i>y</i></strong>?',
+        opciones: op(m(frac('1', '8')), m(frac('3', '5')), m(frac('3', '2')), m(frac('5', '3')), m(frac('7', '3'))) },
+      { n: 19, parte: 'B',
+        enunciado: 'Se tira una moneda 5 veces ¿Cuál es la probabilidad de que salga cara <strong><u>por lo menos</u></strong> una vez?',
+        opciones: op(m(frac('1', '2')), m(frac('1', '5')), m(frac('1', '16')), m(frac('1', '32')), m(frac('31', '32'))) },
+      { n: 20, parte: 'B',
+        enunciado: '<strong><i>S</i></strong> es la suma de tres enteros consecutivos, el mayor de los cuales es <strong><i>x</i></strong>. En términos de <strong><i>S</i></strong> ¿cuál de las siguientes es la suma de tres enteros consecutivos, el menor de los cuales es <strong><i>x</i></strong>?',
+        opciones: op(m('<i>S</i> − 6'), m('<i>S</i> − 3'), m('<i>S</i> + 3'), m('<i>S</i> + 6'), m('2<i>S</i>')) }
+    ]
+  };
+
+  /* ------------------------------------------------------------------ */
+  /* 2. RAZONAMIENTO LÚDICO                                              */
+  /* ------------------------------------------------------------------ */
+  var ludico = {
+    id: 'ludico',
+    titulo: 'Razonamiento lúdico',
+    minutos: 30,
+    proposito: 'Explora la habilidad para entender una estructura de relaciones entre personas, lugares, objetos o eventos ficticios, deducir nueva información a partir de esas relaciones y tomar decisiones que respeten las condiciones del problema.',
+    reglasExtra: [
+      'Las preguntas se agrupan en dos situaciones. Las reglas de cada situación se muestran junto a sus preguntas y podés volver a consultarlas en cualquier momento.',
+      'Todas las preguntas tienen 5 opciones.'
+    ],
+    consigna: 'Cada pregunta está basada en una situación y un conjunto de condiciones, reglas y/o restricciones. Para cada pregunta elija la opción que considere la mejor. Hay sólo <strong>UNA</strong> respuesta correcta para cada pregunta.',
+    partes: {},
+    grupos: {
+      futbol: {
+        titulo: 'Preguntas 1 – 5 · Situación y reglas',
+        etiqueta: 'reglas',
+        html: '<p>En una división regional de fútbol hay seis equipos: J, K, L, M, N y O. Durante la temporada, todos los equipos juegan a las 10 de la mañana de cada sábado. Cada equipo debe jugar contra cada uno de los otros equipos una y sólo una vez durante toda la temporada.</p>' +
+          '<ul class="rules"><li>J juega primero contra M y segundo contra O</li><li>K juega primero N y tercero contra L</li><li>L juega primero contra O</li></ul>',
+        revision: 'Regla 2: el PDF dice "K juega primero N" (sin "contra"). Se mantuvo literal.'
+      },
+      oficinas: {
+        titulo: 'Preguntas 6 – 12 · Situación y reglas',
+        etiqueta: 'reglas',
+        html: '<p>Siete empleados — J, K, L, M, N, O y P — serán asignados a cuatro oficinas — 101, 102, 103 y 104. A cada una de las tres primeras oficinas podrán ser asignados dos empleados. A la oficina 104 se podrá asignar solamente un empleado.</p>' +
+          '<ul class="rules"><li>Ni J ni N serán asignados a una oficina con K</li><li>L no será asignado a una oficina con M</li><li>Si O no es asignado a una oficina con M, entonces O es asignado a una oficina con P</li></ul>'
+      }
+    },
+    items: [
+      { n: 1, grupo: 'futbol', enunciado: '¿Cuál de las siguientes opciones representa los pares de equipos que juegan el primer sábado?',
+        opciones: op('J y K; L y O; M y N', 'J y K; L y N; M y O', 'J y L; K y N; M y O', 'J y M; K y L; N y O', 'J y M; K y N; L y O') },
+      { n: 2, grupo: 'futbol', enunciado: '¿Contra cuál de los siguientes equipos K debe jugar segundo?',
+        opciones: op('J', 'L', 'M', 'N', 'O') },
+      { n: 3, grupo: 'futbol', enunciado: '¿Cuál es el número total de partidos que cada equipo debe jugar durante la temporada?',
+        opciones: op('3', '4', '5', '6', '7') },
+      { n: 4, grupo: 'futbol', enunciado: 'Si M gana 5 partidos ¿cuál de las siguientes afirmaciones debe ser verdadera?',
+        opciones: op('J pierde 5 partidos', 'J gana 4 partidos', 'J gana su primer partido', 'K gana 5 partidos', 'K pierde por lo menos un partido') },
+      { n: 5, grupo: 'futbol', enunciado: 'El último conjunto de partidos podría ser entre los equipos',
+        opciones: op('J y K; L y O; M y N', 'J y L; K y O; M y N', 'J y M; K y L; N y O', 'J y N; K y L; M y O', 'J y O; K y N; L y M') },
+      { n: 6, grupo: 'oficinas', enunciado: '¿Cuáles de los siguientes tres pares de empleados pueden ser asignados a las tres primeras oficinas?',
+        opciones: op('J y N; K y P; L y M', 'J y N; K y L; O y P', 'J y K; L y P; N y O', 'J y L; K y N; M y O', 'J y P; L y N; K y O') },
+      { n: 7, grupo: 'oficinas', enunciado: 'Si L es asignado a una oficina con P ¿cuál de las siguientes afirmaciones debe ser verdadera?',
+        opciones: op('K es asignado a una oficina con M', 'K es asignado a una oficina con N', 'J es asignado a una oficina con M', 'K es asignado a la 104', 'J es asignado a la 104') },
+      { n: 8, grupo: 'oficinas', enunciado: 'Si L es asignado a la 104 ¿Cuál de los siguientes debe ser asignado a una oficina con J?',
+        opciones: op('K', 'M', 'N', 'O', 'P') },
+      { n: 9, grupo: 'oficinas', enunciado: 'Si J es asignado a una oficina con M ¿cuál de las siguientes afirmaciones debe ser verdadera?',
+        opciones: op('K es asignado a la 104', 'L es asignado a la 104', 'N es asignado a la 104', 'L es asignado a una oficina con K o con N', 'P es asignado a una oficina con K o con N') },
+      { n: 10, grupo: 'oficinas', enunciado: 'Si K es asignado a una oficina con P ¿cuál de las siguientes es una lista completa y exacta de los empleados que podrían ser asignados a la 104?',
+        opciones: op('J', 'L', 'J, L', 'L, N', 'J, L, N') },
+      { n: 11, grupo: 'oficinas', enunciado: 'Si P es asignado a una oficina con N ¿cuál de las siguientes afirmaciones <strong><u>NO PUEDE</u></strong> ser verdadera?',
+        opciones: op('O es asignado a una oficina con M', 'K es asignado a una oficina con L', 'J es asignado a la 104', 'K es asignado a la 104', 'L es asignado a la 104') },
+      { n: 12, grupo: 'oficinas', enunciado: 'Si P es asignado la 104 ¿cuál es el número total de posibles agrupamientos de los empleados en tres pares de compañeros de oficina?',
+        opciones: op('1', '2', '3', '4', '5'),
+        revision: 'El PDF dice "Si P es asignado la 104" (falta "a"). Se mantuvo literal.' }
+    ]
+  };
+
+  /* ------------------------------------------------------------------ */
+  /* 3. RAZONAMIENTO VERBAL                                              */
+  /* ------------------------------------------------------------------ */
+  var verbal = {
+    id: 'verbal',
+    titulo: 'Razonamiento verbal',
+    minutos: 40,
+    proposito: 'Mide la habilidad para razonar en situaciones en las que el uso del lenguaje es crucial para resolver problemas: comprensión de textos y análisis de argumentos.',
+    reglasExtra: [
+      'Parte A (preguntas 1 a 11): un texto corto con 4 preguntas y un texto largo con 7 preguntas. Los textos completos quedan disponibles durante toda la prueba.',
+      'Parte B (preguntas 12 a 17): razonamiento crítico sobre situaciones diversas.',
+      'Respondé usando solo la lógica interna del texto, sin recurrir a conocimientos previos sobre el tema.'
+    ],
+    partes: {
+      A: {
+        titulo: 'Parte A · Manejo de texto',
+        consigna: 'Cada texto de este grupo está seguido por preguntas basadas en su contenido. Después de leer el texto elija la mejor opción para responder la correspondiente pregunta. Responda cada pregunta sobre la base de lo que está <strong>explícito</strong> o <strong>implícito</strong> en el texto.'
+      },
+      B: {
+        titulo: 'Parte B · Razonamiento crítico',
+        consigna: 'Analice la situación sobre la cual se basa cada una de las siguientes preguntas. Luego elija la opción que representa la mejor respuesta.'
+      }
+    },
+    grupos: {
+      piel: {
+        titulo: 'Texto de las preguntas 1 – 4',
+        etiqueta: 'texto',
+        html: '<p>Aunque gran cantidad de organismos patogénicos constantemente se ponen en contacto con la piel, éstos hallan en ella un medio ambiente muy desfavorable y, si no existe una herida, tienen gran dificultad para colonizarla. Esta capacidad “auto-esterilizante” de la piel es resultado de la tendencia que tienen todos los ecosistemas bien desarrollados hacia la homeostasis, o el mantenimiento del status quo.</p>' +
+          '<p>Las especies que típicamente viven en el suelo, agua y otras partes raramente se reproducen en la piel. La piel indemne es también desfavorable para la mayor parte de los patógenos humanos. La piel es demasiado ácida o demasiado árida para algunas especies. El constante recambio de las capas superficiales de la piel dificulta aún más la posibilidad de que se establezcan invasores. El mecanismo de defensa más interesante, sin embargo, es resultado de las actividades metabólicas de la <strong>flora residente</strong>. Los <strong>ácidos grasos insaturados</strong>, un importante componente de los lípidos que se encuentran en <strong>el sebo que se junta en la superficie de la piel</strong>, inhiben el crecimiento de varios <strong>patógenos cutáneos bacterianos y micóticos</strong> (hongos). Estos ácidos son el producto metabólico de <strong>ciertos miembros gram-positivos de la comunidad cutánea</strong>, los cuales degradan los <strong>lípidos más complejos</strong> que se encuentran en secreciones de sebo más nuevas.</p>'
+      },
+      tolstoi: {
+        titulo: 'Texto de las preguntas 5 – 11',
+        etiqueta: 'texto',
+        html: '<p><strong>“Las obras maestras son mudas,” escribió Flaubert. “Tienen el aspecto sereno de los mismísimos productos de la naturaleza, de los grandes animales y las montañas.”</strong> Flaubert bien podría haber estado hablando de <i>La Guerra y la Paz</i>, aquella obra vasta, silenciosa, insondable y simple que provoca un sinfín de preguntas a través de la majestuosidad de su ser. La simpleza de Tolstoi es “arrolladora”, dice Bayley, el crítico, “desconcertante” porque proviene de “la impresión casual que Tolstoi tiene de que el mundo es tal cual él lo ve.” Al igual que otros escritores rusos del siglo XIX, Tolstoi es “notable” porque “dice lo que quiere decir”, pero se aparta de todos los demás y de la mayor parte de los escritores occidentales por su identificación con la vida, identificación que es tan completa que nos hace olvidar que es un artista. Él es el centro de su trabajo pero su egocentrismo es de una clase especial. Goethe, por ejemplo, dice Bayley, “se preocupaba nada más que por él mismo. Tolstoi era nada más que él mismo.”</p>' +
+          '<p>A pesar de sus variados modos de escritura y de la multiplicidad de personajes en su ficción, Tolstoi y su obra son uno. La famosa “conversión” en su adultez media, relatada con emoción en <i>Confesión</i>, fue la cumbre de su vida espiritual temprana y no un desvío de ella. Los cambios aparentemente fundamentales que lo llevaron de la narrativa épica a la parábola dogmática, de una actitud gozosa y optimista hacia la vida al pesimismo y al cinismo, de <i>La Guerra y la Paz</i> a <i>La Sonata Kreutzer</i>, provinieron de las mismas profundidades inquietas e impresionables de un espíritu independiente que anhelaba llegar a la verdad de su experiencia. “La verdad es mi héroe,” escribió Tolstoi en su juventud, cuando narraba las vicisitudes de la batalla de Sebastopol. La verdad siguió siendo su héroe — la suya propia, no la verdad de los otros. Los otros caían de bruces frente a Napoleón, creían que un solo hombre podría cambiar los destinos de naciones, adherían a rituales sin significado, formaban sus gustos de acuerdo a los cánones establecidos del arte. Tolstoi revirtió todos los preconceptos; y con cada reversión derrocó el “sistema”, la “máquina”, la creencia ungida externamente, el comportamiento convencional para así favorecer la vida asistemática, impulsiva, una vida de motivaciones internas y de soluciones basadas en el pensamiento independiente.</p>' +
+          '<p>En su obra lo artificial y lo genuino son siempre exhibidos en dramática oposición: el supuestamente grande Napoleón y el verdaderamente grande e ignorado Capitán Tushin, o la verdadera experiencia en el campo de batalla de Nicolás Rostov y su posterior relato de la misma. Lo simple es siempre enfrentado a lo ornamentado, el conocimiento ganado de la experiencia a las aseveraciones de creencias prestadas. <strong>La mágica simpleza de Tolstoi</strong> es el producto de estas tensiones; su obra es un registro de las preguntas que se formuló a sí mismo y de las respuestas que encontró en su búsqueda. Los más grandes personajes de su narrativa ejemplifican esta búsqueda y su felicidad depende de la magnitud de sus respuestas. Tolstoi quería la felicidad pero sólo la felicidad ganada con esfuerzo, la realización emocional y la claridad intelectual que sólo podían venir como premio de un esfuerzo supremo. Despreciaba las satisfacciones menores.</p>'
+      },
+      serpientes: {
+        titulo: 'Texto de las preguntas 13 – 14',
+        etiqueta: 'texto',
+        html: '<p>En cierta área pantanosa, tanto la muy venenosa serpiente de coral como una clase de serpiente mucho menos venenosa tienen bandas rojas, negras y blancas. A sólo 100 kilómetros de distancia, en un área más seca, la variedad local de serpiente de coral carece de bandas rojas. En ese mismo lugar, la especie de serpiente menos venenosa también carece de bandas rojas. La explicación es que, en ambos hábitats, la cuidadosa imitación de la serpiente de coral le garantiza a la variedad menos venenosa una cierta protección que de otro modo no tendría.</p>'
+      }
+    },
+    items: [
+      { n: 1, parte: 'A', grupo: 'piel', enunciado: 'El propósito principal del pasaje es',
+        opciones: op('ofrecer un análisis de algunos procesos metabólicos',
+          'detallar las maneras en que pueden ser inhibidos los hongos y las bacterias',
+          'describir mecanismos con los que la piel se protege de patógenos',
+          'analizar los métodos a través de los cuales los sistemas biológicos mantienen el status quo',
+          'dar un ejemplo específico de las defensas básicas de la piel contra los patógenos') },
+      { n: 2, parte: 'A', grupo: 'piel', enunciado: '¿A cuál de los siguientes elementos que aparecen en negrita en el texto se refiere la frase “<strong>flora residente</strong>”, también en negrita?',
+        opciones: op('ácidos grasos insaturados', 'el sebo que se junta en la superficie de la piel',
+          'patógenos cutáneos bacterianos y micóticos', 'ciertos miembros gram-positivos de la comunidad cutánea', 'lípidos más complejos'),
+        revision: 'Depende de las negritas del texto; se reprodujeron las mismas seis expresiones en negrita que el PDF.' },
+      { n: 3, parte: 'A', grupo: 'piel', enunciado: 'Todos los siguientes elementos se encuentran entre las defensas naturales de la piel contra organismos patógenos <strong><u>EXCEPTO</u></strong>',
+        opciones: op('la sequedad de la piel', 'la acidez de la piel', 'la tendencia de los patógenos a la homeostasis',
+          'el recambio de las capas cutáneas superficiales', 'la degradación metabólica de los lípidos') },
+      { n: 4, parte: 'A', grupo: 'piel', enunciado: '¿Cuál de las siguientes maneras usa la autora para presentar su argumentación?',
+        opciones: op('formula un problema y luego aporta una solución', 'presenta un fenómeno y luego analiza las razones que lo producen',
+          'provee información y luego saca conclusiones de ésta', 'hace una aseveración general y luego razona por analogía',
+          'hace una inferencia y luego la desarrolla por medio de ejemplos') },
+      { n: 5, parte: 'A', grupo: 'tolstoi', enunciado: '¿Cuál de las siguientes afirmaciones caracteriza mejor la actitud de la autora respecto de Tolstoi?',
+        opciones: op('Critica el cinismo de sus últimas obras', 'Encuentra que su teatralidad es artificial', 'Admira su completa sinceridad',
+          'Halla que su incoherencia es perturbadora', 'Respeta su devoción por la ortodoxia') },
+      { n: 6, parte: 'A', grupo: 'tolstoi', enunciado: '¿Cuál de las siguientes afirmaciones parafrasea mejor la opinión de Flaubert que aparece en negrita en el texto?',
+        opciones: op('Las obras maestras parecen comunes e insulsas desde la perspectiva de una era posterior',
+          'Las grandes obras de arte no ofrecen explicaciones sobre sí mismas como así tampoco lo hacen los objetos naturales',
+          'Las obras de arte importantes tienen un lugar en la historia por su cualidad única',
+          'Los aspectos más importantes del buen arte son el orden y la tranquilidad que reflejan',
+          'Las obras maestras que perduran en el tiempo representan las fuerzas de la naturaleza') },
+      { n: 7, parte: 'A', grupo: 'tolstoi', enunciado: 'La autora cita a Bayley en las primeras líneas para mostrar que',
+        opciones: op('aunque Tolstoi observa e interpreta la vida, no se mantiene al margen de su propia experiencia',
+          'el realismo de la obra de Tolstoi da la ilusión de que sus novelas son registros de eventos de la vida diaria',
+          'lamentablemente, Tolstoi no es consciente de sus propias limitaciones aunque es sincero en su intento de describir la experiencia',
+          'aunque Tolstoi trabaja sin demasiado cuidado y cae en presuposiciones injustificadas, su obra tiene un inexplicable halo de verdad',
+          'la perspectiva personal de Tolstoi hace a su obra casi ininteligible para la mayoría de los lectores') },
+      { n: 8, parte: 'A', grupo: 'tolstoi', enunciado: 'La autora afirma que la conversión de Tolstoi representó',
+        opciones: op('una renunciación total al mundo', 'el rechazo de ideas vanguardistas', 'el resultado natural de sus creencias más tempranas',
+          'la aceptación de una religión que previamente había rechazado', 'un cambio fundamental en su estilo de escritura') },
+      { n: 9, parte: 'A', grupo: 'tolstoi', enunciado: 'De acuerdo al texto, la respuesta de Tolstoi a los valores intelectuales y artísticos aceptados en su época fue',
+        opciones: op('seleccionar los más válidos de entre todos ellos', 'combinar puntos de vista opuestos para formar una nueva doctrina',
+          'rechazar los fundamentos de la religión para así poder servir a su arte', 'subvertirlos para defender un nuevo punto de vista político',
+          'trastocarlos para poder ser fiel a su propia experiencia') },
+      { n: 10, parte: 'A', grupo: 'tolstoi', enunciado: '¿Cuál de las siguientes afirmaciones es verdadera respecto de <i>La Guerra y la Paz</i>, según se puede inferir del pasaje?',
+        opciones: op('Pertenece a un período temprano de la obra de Tolstoi', 'Incorpora la polémica de la época sobre el desorden de la vida rusa',
+          'Tiene una trama argumental simple', 'Es una obra que refleja una visión irónica de la vida',
+          'Se ajusta a los parámetros de refinamiento estético sostenidos por los contemporáneos de Tolstoi') },
+      { n: 11, parte: 'A', grupo: 'tolstoi', enunciado: 'De acuerdo con el texto, la explicación de “<strong>La mágica simpleza de Tolstoi</strong>”, en el contexto en que aparece en negrita, se basa en parte en su',
+        opciones: op('notable poder de observación y su facilidad para la descripción exacta', 'persistente resistencia a los convencionalismos unida a su gran energía',
+          'inusual habilidad para reducir a unas pocas palabras la descripción de situaciones complejas',
+          'constante odio por la doctrina religiosa y su preferencia por el nuevo cientificismo',
+          'continuo esfuerzo por representar lo natural en oposición a lo pretencioso') },
+
+      { n: 12, parte: 'B',
+        enunciado: '<blockquote class="stimulus"><p><strong>Hugo:</strong> Si estoy leyendo un buen libro, la historia me absorbe de tal manera que si alguien me llama, no soy consciente de ello y no oigo cosa alguna.</p><p><strong>Juan:</strong> Si usted no puede oír cosa alguna, no puede saber que alguien lo ha estado llamando.</p></blockquote>La respuesta de Juan muestra que ha hecho cuál de las siguientes suposiciones:',
+        opciones: op('Cuando Hugo está concentrado leyendo un buen libro, nadie lo llama.',
+          'Hugo no puede saber que alguien lo ha llamado a menos que haya oído ese llamado.',
+          'Cuando Hugo no está concentrado leyendo algún buen libro, alguien frecuentemente lo llama.',
+          'Hugo se concentra más de lo que él mismo cree.',
+          'Hugo lee buenos libros y hay gente que lo llama, pero no al mismo tiempo.') },
+      { n: 13, parte: 'B', grupo: 'serpientes', enunciado: '¿Cuál de las siguientes afirmaciones puede ser una presuposición relevante que subyace a la explicación ofrecida en el texto?',
+        opciones: op('Las serpientes de coral reclaman territorios individuales, los cuales defienden contra otras serpientes.',
+          'La coloración roja es un camuflaje efectivo principalmente en áreas secas, donde los rojos naturales son más comunes que en otras partes.',
+          'La presencia de una serpiente de coral tiene un extraño efecto paralizante sobre algunas de sus presas.',
+          'Los predadores cuyas dietas incluyen serpientes tienden a evitar a las más venenosas',
+          'Las serpientes de diferentes especies pueden coexistir en paz siempre y cuando no compitan por la misma comida.') },
+      { n: 14, parte: 'B', grupo: 'serpientes', enunciado: '¿Cuál de las siguientes afirmaciones se puede inferir lógicamente del texto?',
+        opciones: op('Todas las variedades de serpientes de coral tienen bandas rojas, negras y blancas.',
+          'La diferenciación entre las serpientes de coral con bandas rojas y las serpientes de coral sin bandas rojas precede a la correspondiente diferenciación entre los miembros de la especie de serpientes menos venenosas mencionadas.',
+          'Los miembros de la especie de serpientes menos venenosas mencionadas producen el mismo tipo de veneno que la serpiente de coral aunque en menor cantidad.',
+          'Las serpientes de coral de diferentes áreas tienen diferentes tipos de veneno.',
+          'La protección que la variedad menos venenosa de serpiente mencionada obtiene de la serpiente de coral significa que la variedad menos venenosa deber ser de alguna utilidad para la serpiente de coral.'),
+        revision: 'Opción E: el PDF dice "deber ser" (errata por "debe ser"). Se mantuvo literal.' },
+      { n: 15, parte: 'B',
+        enunciado: '<blockquote class="stimulus"><p>Sólo cuando la alarma suena en la casa, la policía o los bomberos llegan allí. Para que la policía o los bomberos lleguen a la casa, deben pasar frente la escuela. Sólo la policía pasó frente a la escuela ayer, y ni la policía ni los bomberos respondieron a alarmas anteayer.</p></blockquote>¿Cuál de las siguientes afirmaciones puede inferirse lógicamente del texto?',
+        opciones: op('Los bomberos no llegaron a la casa ayer.', 'La alarma no sonó en la casa ayer.', 'La policía llegó a la casa ayer.',
+          'La policía pasó frente a la escuela anteayer.', 'Los bomberos fallaron en su capacidad de respuesta a la alarma que sonó ayer.'),
+        revision: 'El PDF dice "pasar frente la escuela" (falta "a"). Se mantuvo literal.' },
+      { n: 16, parte: 'B',
+        enunciado: '<blockquote class="stimulus"><p>Un estudio de los datos sobre erupciones volcánicas en el siglo XX muestra un lento y sostenido incremento en el número de informes de erupciones, con bruscas caídas que coinciden con las dos guerras mundiales. La interpretación más razonable de estos datos es que la actividad volcánica en el siglo XX se mantuvo a un nivel constante a lo largo del siglo.</p></blockquote>¿Cuál de las siguientes afirmaciones puede ser una presuposición relevante que subyace a la interpretación de los datos ofrecida en el texto?',
+        opciones: op('Es esperable que el lento crecimiento del número de informes de erupciones volcánicas en el siglo XX continúe en el siglo XXI.',
+          'Las erupciones volcánicas constituyen sólo un pequeño porcentaje de la suma total de la actividad volcánica; sin embargo, tienden a ser divulgadas con más presteza que el resto de la actividad volcánica.',
+          'El hecho que las bruscas caídas en los informes de erupciones volcánicas ocurrieran durante las dos guerras es atribuible a fluctuaciones aleatorias de los datos.',
+          'Las variaciones en la frecuencia de los informes de erupciones volcánicas pueden atribuirse razonablemente a factores que afectaron la posibilidad de informar.',
+          'Los datos anteriores al siglo XX son demasiado asistemáticos como para apoyar cualquier conclusión razonablemente firme sobre los niveles de actividad volcánica a largo plazo.') },
+      { n: 17, parte: 'B',
+        enunciado: '<blockquote class="stimulus"><p>Mirar televisión con inteligencia es una habilidad que debe ser aprendida, tal como debe ser aprendida la habilidad para leer un libro. La televisión, en gran medida a causa de las ilusiones inherentes a ella como un medio visual que se apoya tanto en las virtudes como en las flaquezas de la cámara, crea ilusiones de las cuales uno debe ser consciente si intenta recrear la realidad de carne y hueso que estas ilusiones distorsionan.</p></blockquote>¿Cuál es la conclusión principal que se puede obtener del texto?',
+        opciones: op('Se requiere un televidente inteligente para extraer una imagen auténtica del mundo y de los eventos que ocurren en éste de las imágenes con que la televisión presenta a ambos.',
+          'Saber cómo mirar televisión inteligentemente es una habilidad no menos importante que la de saber leer un libro.',
+          'Los creadores de programas de televisión poseen un arsenal de trucos visuales con los que engañan al televidente distraído.',
+          'La innovación tecnológica en video cámaras es frustrante ya que frecuentemente pone a disposición del público elementos innecesarios mientras que no provee otros elementos que el usuario sí necesita.',
+          'La habilidad para ver televisión inteligentemente es muy parecida a la habilidad para leer un libro ya que cada una requiere sobre todo la habilidad para reconocer ilusiones y distorsiones como lo que son.') }
+    ]
+  };
+
+  root.ADM_ITEMS = {
+    version: 'ADM-C-practica-v1',
+    pruebas: { cuantitativo: cuantitativo, ludico: ludico, verbal: verbal },
+    orden: ['cuantitativo', 'ludico', 'verbal']
+  };
+})(typeof window !== 'undefined' ? window : this);
+
+</script>
+  <script>
+/*
+ * Aplicación del estudiante: perfil anónimo, instrucciones, prueba con
+ * temporizador, revisión y entrega. No calcula puntajes: la corrección se
+ * hace en el servidor (Apps Script) con una clave que el navegador no ve.
+ */
+(function () {
+  'use strict';
+
+  var DATA = window.ADM_ITEMS;
+  var PREFIJO = 'admtest:v1:';
+  var AVISOS_SEG = [300, 60];
+
+  var PERFIL_TEXTOS = {
+    anios: { '1': '1.º año', '2': '2.º año', '3': '3.º año', '4': '4.º año', '5': '5.º año', otro: 'Otro' },
+    condiciones: { ingresante: 'Ingresante', regular: 'Estudiante regular', proximo_a_egresar: 'Próximo a egresar' }
+  };
+
+  // Valores usados solo en modo demostración; con servidor manda apiConfig().
+  var CONFIG_DEMO = {
+    ok: true,
+    version: DATA.version,
+    recepcionAbierta: true,
+    mostrarPorcentaje: true,
+    pruebas: {
+      cuantitativo: { habilitada: true, minutos: 45, items: 20 },
+      ludico: { habilitada: true, minutos: 30, items: 12 },
+      verbal: { habilitada: true, minutos: 40, items: 17 }
+    },
+    perfil: {
+      anios: ['1', '2', '3', '4', '5', 'otro'],
+      condiciones: ['ingresante', 'regular', 'proximo_a_egresar'],
+      especialidades: [
+        'Ingeniería Civil', 'Ingeniería Eléctrica', 'Ingeniería Electromecánica',
+        'Ingeniería Electrónica', 'Ingeniería Industrial', 'Ingeniería Mecánica',
+        'Ingeniería Metalúrgica', 'Ingeniería Química',
+        'Ingeniería en Sistemas de Información', 'Otra'
+      ]
+    }
+  };
+
+  var app = document.getElementById('app');
+  var estado = { config: null, perfil: null, intento: null, timer: null, avisados: {} };
+
+  /* ================================================================
+   * Almacenamiento local (tolerante a fallos)
+   * ============================================================== */
+  function leer(store, k) {
+    try { var v = store.getItem(PREFIJO + k); return v ? JSON.parse(v) : null; } catch (e) { return null; }
+  }
+  function guardar(store, k, v) {
+    try { store.setItem(PREFIJO + k, JSON.stringify(v)); } catch (e) { /* sin almacenamiento */ }
+  }
+  function borrar(store, k) {
+    try { store.removeItem(PREFIJO + k); } catch (e) { /* sin almacenamiento */ }
+  }
+  var local = safeStore('localStorage');
+  var sesion = safeStore('sessionStorage');
+  function safeStore(nombre) {
+    try { return window[nombre]; } catch (e) { return { getItem: function () { return null; }, setItem: function () {}, removeItem: function () {} }; }
+  }
+
+  // Intento en curso: persiste en localStorage para sobrevivir a recargas o cortes.
+  function guardarIntento() { if (estado.intento) guardar(local, 'intento', estado.intento); }
+  function borrarIntento() { borrar(local, 'intento'); estado.intento = null; }
+
+  /* ================================================================
+   * Transporte hacia el servidor
+   * ============================================================== */
+  var endpointMeta = document.querySelector('meta[name="adm-endpoint"]');
+  var ENDPOINT = endpointMeta ? endpointMeta.content.trim() : '';
+  var MODO = (window.google && google.script && google.script.run) ? 'gas' : (ENDPOINT ? 'fetch' : 'demo');
+
+  var api = {
+    config: function () { return llamar('apiConfig', 'config', null); },
+    iniciar: function (d) { return llamar('apiIniciar', 'iniciar', d); },
+    entregar: function (d) { return llamar('apiEntregar', 'entregar', d); }
+  };
+  function llamar(fn, accion, data) {
+    if (MODO === 'gas') {
+      return new Promise(function (ok, fallo) {
+        var r = google.script.run.withSuccessHandler(ok).withFailureHandler(fallo);
+        if (data === null) r[fn](); else r[fn](data);
+      });
+    }
+    if (MODO === 'fetch') {
+      // text/plain evita el preflight CORS; Apps Script responde JSON.
+      return fetch(ENDPOINT, { method: 'POST', body: JSON.stringify({ action: accion, data: data }), redirect: 'follow' })
+        .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+    }
+    // Modo demostración: no se envía nada.
+    return new Promise(function (ok) {
+      setTimeout(function () {
+        if (accion === 'config') ok(CONFIG_DEMO);
+        else if (accion === 'iniciar') ok(data.codigo.trim() ? { ok: true, demo: true, token: 'demo' } : { ok: false, error: 'codigo_invalido' });
+        else ok({ ok: true, recibido: true, demo: true, idIntento: data.idIntento, resultado: { porcentaje: '—' } });
+      }, 250);
+    });
+  }
+
+  /* ================================================================
+   * Utilidades
+   * ============================================================== */
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function uuidv4() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    var b = new Uint8Array(16);
+    crypto.getRandomValues(b);
+    b[6] = (b[6] & 0x0f) | 0x40;
+    b[8] = (b[8] & 0x3f) | 0x80;
+    var h = Array.prototype.map.call(b, function (x) { return (x + 0x100).toString(16).slice(1); }).join('');
+    return h.slice(0, 8) + '-' + h.slice(8, 12) + '-' + h.slice(12, 16) + '-' + h.slice(16, 20) + '-' + h.slice(20);
+  }
+  function mmss(seg) {
+    seg = Math.max(0, Math.ceil(seg));
+    var m = Math.floor(seg / 60), s = seg % 60;
+    return m + ':' + (s < 10 ? '0' : '') + s;
+  }
+  function anunciar(txt, urgente) {
+    var el = document.getElementById(urgente ? 'sr-alert' : 'sr-live');
+    el.textContent = '';
+    setTimeout(function () { el.textContent = txt; }, 50);
+  }
+  function enfocar(sel) {
+    var el = typeof sel === 'string' ? app.querySelector(sel) : sel;
+    if (el) { if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1'); el.focus({ preventScroll: false }); }
+  }
+  function prueba(id) { return DATA.pruebas[id]; }
+  function cfgPrueba(id) { return estado.config.pruebas[id]; }
+  function codigoCorto(id) { return id.slice(0, 8).toUpperCase(); }
+  function perfilCompleto(p) { return p && p.anio && p.especialidad && p.condicion; }
+  function textoError(e) {
+    var codigos = {
+      recepcion_cerrada: 'La recepción de pruebas está cerrada en este momento.',
+      prueba_deshabilitada: 'Esta prueba no está habilitada en este momento.',
+      ya_entregado: 'Este intento ya fue entregado.',
+      codigo_invalido: 'El código de acceso no es correcto. Pedíselo al equipo docente.',
+      codigo_no_configurado: 'Esta prueba todavía no tiene código de acceso configurado. Avisale al equipo docente.',
+      token_invalido: 'El intento no fue habilitado con un código de acceso válido.',
+      servidor_ocupado: 'El servidor está ocupado. Probá de nuevo en unos segundos.'
+    };
+    if (e && e.error && codigos[e.error]) return codigos[e.error];
+    if (e && e.error) return 'El servidor rechazó el envío (' + e.error + (e.detalle ? ': ' + e.detalle : '') + ').';
+    return 'No se pudo conectar con el servidor. Revisá tu conexión.';
+  }
+
+  /* ================================================================
+   * Diálogo accesible
+   * ============================================================== */
+  function dialogo(titulo, cuerpoHtml, botones, opciones) {
+    var dlg = document.getElementById('dlg');
+    document.getElementById('dlg-title').textContent = titulo;
+    document.getElementById('dlg-body').innerHTML = cuerpoHtml;
+    var cont = document.getElementById('dlg-actions');
+    cont.innerHTML = '';
+    botones.forEach(function (b) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn ' + (b.clase || '');
+      btn.textContent = b.texto;
+      btn.addEventListener('click', function () { cerrarDialogo(); if (b.accion) b.accion(); });
+      cont.appendChild(btn);
+    });
+    dlg.oncancel = function (ev) { if (opciones && opciones.bloqueante) ev.preventDefault(); };
+    if (dlg.open) dlg.close();
+    if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
+    var foco = cont.querySelector('.btn:not(.secondary)') || cont.firstChild;
+    if (foco) foco.focus();
+  }
+  function cerrarDialogo() {
+    var dlg = document.getElementById('dlg');
+    if (dlg.open) { if (dlg.close) dlg.close(); else dlg.removeAttribute('open'); }
+  }
+
+  /* ================================================================
+   * Vista: inicio (propósito, privacidad, perfil y elección de prueba)
+   * ============================================================== */
+  function vistaInicio() {
+    detenerTimer();
+    window.onbeforeunload = null;
+    app.onchange = null;
+    var c = estado.config;
+    var p = estado.perfil || {};
+    var pendiente = leer(local, 'intento');
+
+    var html = '<h1>Diagnóstico de razonamiento</h1>' +
+      '<div class="notice"><p><strong>¿Para qué es?</strong> Estas pruebas se usan con fines diagnósticos, para conocer cómo razonan estudiantes de Ingeniería de la UTN en distintos momentos de la carrera. <strong>No son evaluaciones de ninguna materia ni afectan tu condición académica.</strong></p>' +
+      '<p><strong>Es anónimo.</strong> No pedimos nombre, legajo, DNI ni correo, y no hace falta iniciar sesión. Solo registramos tu año, carrera y condición académica, tus respuestas y el tiempo empleado. Cada intento se identifica con un código aleatorio. Los resultados se analizan de forma agregada.</p></div>';
+
+    if (!c.recepcionAbierta) {
+      html += '<div class="notice warn"><p>La recepción de pruebas está cerrada en este momento.</p></div>';
+    }
+
+    if (pendiente) {
+      var pp = prueba(pendiente.prueba);
+      html += '<div class="notice warn" id="pendiente"><p><strong>Hay una prueba sin terminar en este dispositivo:</strong> ' + esc(pp.titulo) + '.</p>' +
+        (pendiente.estado === 'pendiente'
+          ? '<p>Ya la entregaste, pero el envío no se completó. Reintentá el envío.</p><div class="actions"><button class="btn" data-accion="reenviar">Reintentar envío</button></div>'
+          : '<p>El tiempo sigue corriendo desde que comenzó.</p><div class="actions"><button class="btn" data-accion="continuar">Continuar la prueba</button></div>') +
+        '</div>';
+    }
+
+    html += '<section class="card" aria-labelledby="perfil-h"><h2 id="perfil-h" style="margin-top:0">Tus datos de perfil</h2>' +
+      '<p class="muted">Solo estos tres datos, para analizar resultados por grupo.</p>' +
+      '<fieldset><legend>Año de cursado</legend><div class="choice-row">' +
+      c.perfil.anios.map(function (a) {
+        return '<label class="chip"><input type="radio" name="anio" value="' + esc(a) + '"' + (p.anio === a ? ' checked' : '') + '><span>' + esc(PERFIL_TEXTOS.anios[a] || a) + '</span></label>';
+      }).join('') + '</div></fieldset>' +
+      '<fieldset><legend><label for="especialidad">Especialidad o carrera de Ingeniería</label></legend>' +
+      '<select id="especialidad" name="especialidad"><option value="">Elegí una opción</option>' +
+      c.perfil.especialidades.map(function (e) {
+        return '<option' + (p.especialidad === e ? ' selected' : '') + '>' + esc(e) + '</option>';
+      }).join('') + '</select></fieldset>' +
+      '<fieldset><legend>Condición académica</legend><div class="choice-row">' +
+      c.perfil.condiciones.map(function (k) {
+        return '<label class="chip"><input type="radio" name="condicion" value="' + esc(k) + '"' + (p.condicion === k ? ' checked' : '') + '><span>' + esc(PERFIL_TEXTOS.condiciones[k] || k) + '</span></label>';
+      }).join('') + '</div></fieldset>' +
+      '<p id="perfil-estado" class="muted" aria-live="polite"></p></section>';
+
+    html += '<section aria-labelledby="pruebas-h"><h2 id="pruebas-h">Elegí una prueba</h2>' +
+      '<p class="muted">Son tres pruebas independientes. Podés hacerlas en el orden que indique el equipo docente.</p><div class="tests">' +
+      DATA.orden.map(function (id) {
+        var t = prueba(id), cp = cfgPrueba(id);
+        var hecha = (leer(sesion, 'hechas') || []).indexOf(id) >= 0;
+        return '<article class="card test-card"><h3>' + esc(t.titulo) + '</h3>' +
+          '<p class="meta">' + cp.items + ' preguntas · ' + cp.minutos + ' minutos</p>' +
+          (hecha ? '<p><span class="badge">Entregada en esta sesión</span></p>' : '') +
+          (!cp.habilitada ? '<p><span class="badge warn">No habilitada</span></p>' : '') +
+          '<div class="actions"><button class="btn" data-accion="abrir" data-prueba="' + id + '"' +
+          (!cp.habilitada || !c.recepcionAbierta ? ' disabled' : '') + '>Ingresar</button></div></article>';
+      }).join('') + '</div></section>';
+
+    if ((leer(sesion, 'hechas') || []).length) {
+      html += '<div class="actions"><button class="btn secondary" data-accion="terminar">Terminé: borrar mis datos de perfil de este dispositivo</button></div>';
+    }
+
+    app.innerHTML = html;
+
+    function actualizarPerfil() {
+      var anio = app.querySelector('input[name=anio]:checked');
+      var cond = app.querySelector('input[name=condicion]:checked');
+      estado.perfil = {
+        anio: anio ? anio.value : '',
+        especialidad: app.querySelector('#especialidad').value,
+        condicion: cond ? cond.value : ''
+      };
+      guardar(sesion, 'perfil', estado.perfil);
+      app.querySelector('#perfil-estado').textContent = perfilCompleto(estado.perfil)
+        ? 'Perfil completo.' : 'Completá los tres datos para poder ingresar a una prueba.';
+    }
+    app.querySelectorAll('input[name=anio], input[name=condicion], #especialidad').forEach(function (el) {
+      el.addEventListener('change', actualizarPerfil);
+    });
+    actualizarPerfil();
+
+    app.onclick = function (ev) {
+      var b = ev.target.closest('button[data-accion]');
+      if (!b) return;
+      var acc = b.getAttribute('data-accion');
+      if (acc === 'abrir') {
+        if (!perfilCompleto(estado.perfil)) {
+          app.querySelector('#perfil-estado').textContent = 'Antes de ingresar, completá año, carrera y condición académica.';
+          enfocar('#perfil-h');
+          anunciar('Completá los datos de perfil antes de ingresar.', true);
+          return;
+        }
+        if (leer(local, 'intento')) {
+          dialogo('Hay una prueba sin terminar', '<p>Terminá o entregá la prueba en curso antes de empezar otra.</p>', [{ texto: 'Entendido' }]);
+          return;
+        }
+        vistaInstrucciones(b.getAttribute('data-prueba'));
+      } else if (acc === 'continuar') {
+        estado.intento = leer(local, 'intento');
+        vistaPrueba();
+      } else if (acc === 'reenviar') {
+        estado.intento = leer(local, 'intento');
+        enviar();
+      } else if (acc === 'terminar') {
+        borrar(sesion, 'perfil'); borrar(sesion, 'hechas'); estado.perfil = null;
+        vistaInicio();
+        anunciar('Datos de perfil borrados de este dispositivo.');
+      }
+    };
+    enfocar('h1');
+  }
+
+  /* ================================================================
+   * Vista: instrucciones previas
+   * ============================================================== */
+  function vistaInstrucciones(id) {
+    var t = prueba(id), cp = cfgPrueba(id), p = estado.perfil;
+    var html = '<p><button class="btn ghost" data-accion="volver">← Volver</button></p>' +
+      '<h1>' + esc(t.titulo) + '</h1>' +
+      '<section class="card"><h2 style="margin-top:0">Propósito</h2><p>' + esc(t.proposito) + '</p>' +
+      '<dl class="facts"><dt>Preguntas</dt><dd>' + cp.items + '</dd><dt>Tiempo</dt><dd>' + cp.minutos + ' minutos</dd>' +
+      '<dt>Resultado</dt><dd>' + (estado.config.mostrarPorcentaje
+        ? 'Al entregar verás tu porcentaje de aciertos (sin detalle por pregunta)'
+        : 'Lo analiza el equipo docente') + '</dd></dl></section>' +
+      '<section class="card"><h2 style="margin-top:0">Reglas</h2><ul>' +
+      '<li>Cada pregunta tiene <strong>una sola respuesta correcta</strong>. Podés cambiar o borrar tu respuesta hasta entregar.</li>' +
+      '<li>Las respuestas incorrectas y las preguntas sin responder no suman ni restan puntos.</li>' +
+      '<li>Podés moverte libremente entre las preguntas y revisar todo antes de entregar. Te vamos a avisar cuáles quedaron sin responder; no se completan automáticamente.</li>' +
+      t.reglasExtra.map(function (r) { return '<li>' + esc(r) + '</li>'; }).join('') +
+      '</ul></section>' +
+      '<section class="card"><h2 style="margin-top:0">Tiempo</h2><ul>' +
+      '<li>El temporizador empieza cuando tocás <strong>Comenzar</strong> y queda visible arriba durante toda la prueba.</li>' +
+      '<li>El tiempo <strong>no se detiene</strong> si cerrás o recargás la página. Tus respuestas quedan guardadas en este dispositivo y podés continuar.</li>' +
+      '<li>Te avisamos cuando queden 5 minutos y 1 minuto.</li>' +
+      '<li><strong>Al agotarse el tiempo, la prueba se entrega automáticamente</strong> con las respuestas marcadas hasta ese momento. Las que no respondiste quedan como omitidas y ya no podrás modificar nada.</li>' +
+      '</ul></section>' +
+      '<section class="card"><h2 style="margin-top:0">Tu perfil</h2><dl class="facts">' +
+      '<dt>Año</dt><dd>' + esc(PERFIL_TEXTOS.anios[p.anio]) + '</dd>' +
+      '<dt>Carrera</dt><dd>' + esc(p.especialidad) + '</dd>' +
+      '<dt>Condición</dt><dd>' + esc(PERFIL_TEXTOS.condiciones[p.condicion]) + '</dd></dl>' +
+      '<p class="muted">Si algo no es correcto, volvé y cambialo antes de comenzar.</p></section>' +
+      '<form class="card" id="form-codigo" novalidate><h2 style="margin-top:0"><label for="codigo-acceso">Código de acceso</label></h2>' +
+      '<p class="muted" id="codigo-ayuda">Lo da el equipo docente al comenzar la toma. No distingue mayúsculas de minúsculas.' +
+      (MODO === 'demo' ? ' En modo demostración sirve cualquier código.' : '') + '</p>' +
+      '<input type="text" id="codigo-acceso" class="code-input" name="codigo" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="20" required aria-describedby="codigo-ayuda inst-error">' +
+      '<p id="inst-error" class="form-error" role="alert"></p>' +
+      '<div class="actions"><button type="submit" class="btn" id="btn-comenzar">Comenzar (' + cp.minutos + ' min)</button>' +
+      '<button type="button" class="btn secondary" data-accion="volver">Volver</button></div></form>';
+    app.innerHTML = html;
+    app.onclick = function (ev) {
+      if (ev.target.closest('button[data-accion=volver]')) vistaInicio();
+    };
+    var form = app.querySelector('#form-codigo');
+    var campo = app.querySelector('#codigo-acceso');
+    var error = app.querySelector('#inst-error');
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var codigo = campo.value.trim();
+      if (!codigo) {
+        error.textContent = 'Ingresá el código de acceso para comenzar.';
+        campo.setAttribute('aria-invalid', 'true');
+        campo.focus();
+        return;
+      }
+      var b = app.querySelector('#btn-comenzar');
+      b.disabled = true;
+      error.textContent = '';
+      comenzar(id, codigo).catch(function (e) {
+        b.disabled = false;
+        campo.setAttribute('aria-invalid', 'true');
+        error.textContent = textoError(e);
+        campo.focus();
+      });
+    });
+    enfocar('h1');
+  }
+
+  function comenzar(id, codigo) {
+    var cp = cfgPrueba(id);
+    var intento = {
+      id: uuidv4(),
+      prueba: id,
+      version: DATA.version,
+      perfil: { anio: estado.perfil.anio, especialidad: estado.perfil.especialidad, condicion: estado.perfil.condicion },
+      limiteSeg: cp.minutos * 60,
+      inicioMs: null,
+      respuestas: prueba(id).items.map(function () { return null; }),
+      actual: 0,
+      estado: 'en_curso',
+      finalizacion: null,
+      duracionClienteSeg: null,
+      token: null
+    };
+    // El servidor valida el código, registra la hora de inicio y devuelve un
+    // token firmado que habilita la entrega. El código no se guarda.
+    return api.iniciar({ idIntento: intento.id, prueba: id, codigo: codigo }).then(function (r) {
+      if (!r || !r.ok || !r.token) throw r || {};
+      intento.token = r.token;
+      if (r.minutos) intento.limiteSeg = r.minutos * 60;
+    }).then(function () {
+      intento.inicioMs = Date.now();
+      estado.intento = intento;
+      estado.avisados = {};
+      guardarIntento();
+      vistaPrueba();
+    });
+  }
+
+  /* ================================================================
+   * Vista: prueba
+   * ============================================================== */
+  function restanteSeg() {
+    var i = estado.intento;
+    return i.limiteSeg - (Date.now() - i.inicioMs) / 1000;
+  }
+
+  function vistaPrueba() {
+    var i = estado.intento;
+    var t = prueba(i.prueba);
+    if (restanteSeg() <= 0) return tiempoAgotado();
+
+    app.innerHTML =
+      '<div class="test-bar" role="region" aria-label="Estado de la prueba">' +
+      '<span class="title">' + esc(t.titulo) + '</span>' +
+      '<span class="progress" id="progreso"></span>' +
+      '<span class="timer" id="timer" role="timer" aria-label="Tiempo restante"></span>' +
+      '<button class="btn secondary" data-accion="revisar">Revisar y entregar</button></div>' +
+      '<div id="pregunta-cont"></div>' +
+      '<nav class="grid-nav" aria-label="Ir a una pregunta"><h2 class="sr-only">Preguntas</h2><ol id="grilla"></ol>' +
+      '<div class="legend-keys" aria-hidden="true"><span class="k-ans">Respondida</span><span>Sin responder</span></div></nav>';
+
+    app.onclick = function (ev) {
+      var b = ev.target.closest('button[data-accion]');
+      if (!b) return;
+      var acc = b.getAttribute('data-accion');
+      if (acc === 'revisar') vistaRevision();
+      else if (acc === 'ir') irA(parseInt(b.getAttribute('data-n'), 10) - 1, true);
+      else if (acc === 'ant') irA(i.actual - 1, true);
+      else if (acc === 'sig') { if (i.actual === t.items.length - 1) vistaRevision(); else irA(i.actual + 1, true); }
+      else if (acc === 'limpiar') { i.respuestas[i.actual] = null; guardarIntento(); pintarPregunta(false); anunciar('Respuesta borrada.'); }
+      else if (acc === 'material') alternarMaterial(b);
+    };
+    app.onchange = function (ev) {
+      if (ev.target.name === 'op') {
+        i.respuestas[i.actual] = ev.target.value;
+        guardarIntento();
+        pintarGrilla();
+        pintarProgreso();
+        var lb = app.querySelector('[data-accion=limpiar]');
+        if (lb) lb.disabled = false;
+      }
+    };
+
+    pintarPregunta(true);
+    iniciarTimer();
+    window.onbeforeunload = function () { return 'La prueba sigue en curso.'; };
+  }
+
+  function irA(idx, foco) {
+    var n = prueba(estado.intento.prueba).items.length;
+    if (idx < 0 || idx >= n) return;
+    estado.intento.actual = idx;
+    guardarIntento();
+    pintarPregunta(foco);
+  }
+
+  function pintarProgreso() {
+    var i = estado.intento;
+    var r = i.respuestas.filter(function (x) { return x; }).length;
+    var el = document.getElementById('progreso');
+    if (el) el.textContent = 'Respondidas ' + r + ' de ' + i.respuestas.length;
+  }
+
+  function pintarGrilla() {
+    var i = estado.intento;
+    document.getElementById('grilla').innerHTML = i.respuestas.map(function (r, k) {
+      return '<li><button type="button" data-accion="ir" data-n="' + (k + 1) + '" class="' + (r ? 'answered' : '') + '"' +
+        (k === i.actual ? ' aria-current="step"' : '') +
+        ' aria-label="Pregunta ' + (k + 1) + (r ? ', respondida ' + r : ', sin responder') + '">' + (k + 1) + '</button></li>';
+    }).join('');
+  }
+
+  function pintarPregunta(foco) {
+    var i = estado.intento;
+    var t = prueba(i.prueba);
+    var it = t.items[i.actual];
+    var total = t.items.length;
+    var grupo = it.grupo ? t.grupos[it.grupo] : null;
+    var parte = it.parte && t.partes[it.parte] ? t.partes[it.parte] : null;
+    var consigna = parte ? parte.consigna : t.consigna;
+    var tituloParte = parte ? parte.titulo : 'Consigna';
+    var elegida = i.respuestas[i.actual];
+
+    var cuerpo = '';
+    if (it.cantidadA !== undefined) {
+      cuerpo += (it.comun ? '<div class="common">' + it.comun + '</div>' : '') +
+        '<table class="quantities"><caption class="sr-only">Cantidades a comparar</caption><thead><tr><th scope="col">Cantidad A</th><th scope="col">Cantidad B</th></tr></thead>' +
+        '<tbody><tr><td>' + it.cantidadA + '</td><td>' + it.cantidadB + '</td></tr></tbody></table>';
+    } else {
+      cuerpo += '<div>' + it.enunciado + '</div>';
+    }
+
+    // El material (reglas o texto) se abre al entrar a un grupo nuevo.
+    var anterior = i.actual > 0 ? t.items[i.actual - 1].grupo : null;
+    var materialAbierto = grupo && (estado.materialAbierto === undefined || anterior !== it.grupo)
+      ? true : !!estado.materialAbierto;
+    if (grupo) estado.materialAbierto = materialAbierto;
+
+    var material = grupo
+      ? '<aside class="material" aria-labelledby="mat-h"><div class="material-head"><h2 id="mat-h">' + esc(grupo.titulo) + '</h2>' +
+        '<button type="button" class="btn ghost material-toggle" data-accion="material" aria-controls="mat-body" aria-expanded="' + materialAbierto + '">' +
+        (materialAbierto ? 'Ocultar ' : 'Ver ') + grupo.etiqueta + '</button></div>' +
+        '<div class="material-body" id="mat-body"' + (materialAbierto ? '' : ' hidden') + '>' + grupo.html + '</div></aside>'
+      : '';
+
+    document.getElementById('pregunta-cont').innerHTML =
+      '<div class="test-layout' + (grupo ? ' with-material' : '') + '">' + material +
+      '<section class="question" aria-labelledby="q-h">' +
+      '<details class="part-head"><summary>' + esc(tituloParte) + ' · ver consigna</summary><p class="consigna">' + consigna + '</p></details>' +
+      '<fieldset><legend class="q-number" id="q-h" tabindex="-1">Pregunta ' + it.n + ' de ' + total + '</legend>' +
+      '<div class="stem">' + cuerpo + '</div>' +
+      '<div class="options">' + it.opciones.map(function (o) {
+        var idOp = 'op-' + o.key;
+        return '<label class="option" for="' + idOp + '"><input type="radio" name="op" id="' + idOp + '" value="' + o.key + '"' +
+          (elegida === o.key ? ' checked' : '') + '><span class="letter">' + o.key + '.</span><span class="text">' + o.html + '</span></label>';
+      }).join('') + '</div></fieldset>' +
+      '<div class="q-nav"><button type="button" class="btn secondary" data-accion="ant"' + (i.actual === 0 ? ' disabled' : '') + '>← Anterior</button>' +
+      '<button type="button" class="btn ghost" data-accion="limpiar"' + (elegida ? '' : ' disabled') + '>Borrar respuesta</button>' +
+      '<button type="button" class="btn" data-accion="sig">' + (i.actual === total - 1 ? 'Ir a revisión →' : 'Siguiente →') + '</button></div>' +
+      '</section></div>';
+
+    pintarGrilla();
+    pintarProgreso();
+    if (foco) enfocar('#q-h');
+  }
+
+  function alternarMaterial(btn) {
+    var body = document.getElementById('mat-body');
+    var abrir = body.hasAttribute('hidden');
+    if (abrir) body.removeAttribute('hidden'); else body.setAttribute('hidden', '');
+    estado.materialAbierto = abrir;
+    btn.setAttribute('aria-expanded', String(abrir));
+    var g = prueba(estado.intento.prueba).grupos[prueba(estado.intento.prueba).items[estado.intento.actual].grupo];
+    btn.textContent = (abrir ? 'Ocultar ' : 'Ver ') + g.etiqueta;
+  }
+
+  /* ================================================================
+   * Temporizador
+   * ============================================================== */
+  function iniciarTimer() {
+    detenerTimer();
+    tick();
+    estado.timer = setInterval(tick, 1000);
+  }
+  function detenerTimer() {
+    if (estado.timer) clearInterval(estado.timer);
+    estado.timer = null;
+  }
+  function tick() {
+    var i = estado.intento;
+    if (!i || i.estado !== 'en_curso') return detenerTimer();
+    var r = restanteSeg();
+    var el = document.getElementById('timer');
+    if (el) {
+      el.textContent = mmss(r);
+      el.classList.toggle('warn', r <= 300 && r > 60);
+      el.classList.toggle('danger', r <= 60);
+    }
+    AVISOS_SEG.forEach(function (s) {
+      if (r <= s && r > 0 && !estado.avisados[s]) {
+        estado.avisados[s] = true;
+        anunciar('Atención: quedan ' + (s / 60) + (s === 60 ? ' minuto.' : ' minutos.'), true);
+      }
+    });
+    if (r <= 0) tiempoAgotado();
+  }
+
+  function tiempoAgotado() {
+    detenerTimer();
+    var i = estado.intento;
+    if (i.estado === 'en_curso') {
+      i.estado = 'pendiente';
+      i.finalizacion = 'tiempo_agotado';
+      i.duracionClienteSeg = Math.min(i.limiteSeg, Math.round((Date.now() - i.inicioMs) / 1000));
+      guardarIntento();
+    }
+    // La entrega sale sin esperar ninguna acción del estudiante.
+    enviar();
+    anunciar('Se agotó el tiempo. Tu prueba se está entregando.', true);
+    dialogo('Se agotó el tiempo',
+      '<p>La prueba se entregó automáticamente con las respuestas que marcaste. Las preguntas sin responder quedan como omitidas.</p>',
+      [{ texto: 'Entendido' }]);
+  }
+
+  /* ================================================================
+   * Vista: revisión antes de entregar
+   * ============================================================== */
+  function vistaRevision() {
+    var i = estado.intento;
+    var t = prueba(i.prueba);
+    var faltan = [];
+    i.respuestas.forEach(function (r, k) { if (!r) faltan.push(k + 1); });
+
+    app.innerHTML =
+      '<div class="test-bar" role="region" aria-label="Estado de la prueba">' +
+      '<span class="title">' + esc(t.titulo) + ' · Revisión</span>' +
+      '<span class="progress" id="progreso"></span>' +
+      '<span class="timer" id="timer" role="timer" aria-label="Tiempo restante"></span></div>' +
+      '<h1 tabindex="-1">Revisá tus respuestas</h1>' +
+      (faltan.length
+        ? '<div class="notice warn" role="status"><p><strong>Tenés ' + faltan.length + ' pregunta' + (faltan.length > 1 ? 's' : '') + ' sin responder:</strong> ' +
+          faltan.map(function (n) { return '<button class="btn ghost" data-accion="ir" data-n="' + n + '">' + n + '</button>'; }).join(' ') +
+          '</p><p>Si entregás así, quedarán como omitidas.</p></div>'
+        : '<div class="notice" role="status"><p>Respondiste todas las preguntas.</p></div>') +
+      '<div class="card review-wrap"><table class="review"><caption class="sr-only">Resumen de respuestas</caption>' +
+      '<thead><tr><th scope="col">Pregunta</th><th scope="col">Tu respuesta</th><th scope="col"><span class="sr-only">Acción</span></th></tr></thead><tbody>' +
+      i.respuestas.map(function (r, k) {
+        return '<tr><td>' + (k + 1) + '</td><td class="' + (r ? '' : 'missing') + '">' + (r ? r : 'Sin responder') + '</td>' +
+          '<td><button class="btn ghost" data-accion="ir" data-n="' + (k + 1) + '" aria-label="Ir a la pregunta ' + (k + 1) + '">Ir</button></td></tr>';
+      }).join('') + '</tbody></table></div>' +
+      '<div class="actions"><button class="btn" data-accion="entregar">Entregar prueba</button>' +
+      '<button class="btn secondary" data-accion="volver">Volver a la prueba</button></div>';
+
+    app.onchange = null;
+    app.onclick = function (ev) {
+      var b = ev.target.closest('button[data-accion]');
+      if (!b) return;
+      var acc = b.getAttribute('data-accion');
+      if (acc === 'volver') { vistaPrueba(); }
+      else if (acc === 'ir') { i.actual = parseInt(b.getAttribute('data-n'), 10) - 1; guardarIntento(); vistaPrueba(); }
+      else if (acc === 'entregar') confirmarEntrega(faltan);
+    };
+    pintarProgreso();
+    iniciarTimer();
+    enfocar('h1');
+  }
+
+  function confirmarEntrega(faltan) {
+    var cuerpo = faltan.length
+      ? '<p>Quedan <strong>' + faltan.length + '</strong> preguntas sin responder (' + faltan.join(', ') + '). Se registrarán como omitidas.</p><p>Después de entregar no vas a poder cambiar tus respuestas.</p>'
+      : '<p>Después de entregar no vas a poder cambiar tus respuestas.</p>';
+    dialogo('¿Entregar la prueba?', cuerpo, [
+      { texto: 'Seguir revisando', clase: 'secondary' },
+      { texto: 'Entregar', accion: function () {
+        var i = estado.intento;
+        if (i.estado !== 'en_curso') return;
+        detenerTimer();
+        i.estado = 'pendiente';
+        i.finalizacion = 'entregado';
+        i.duracionClienteSeg = Math.round((Date.now() - i.inicioMs) / 1000);
+        guardarIntento();
+        enviar();
+      } }
+    ]);
+  }
+
+  /* ================================================================
+   * Envío y confirmación
+   * ============================================================== */
+  function enviar() {
+    var i = estado.intento;
+    window.onbeforeunload = null;
+    app.onclick = null; app.onchange = null;
+    app.innerHTML = '<h1 tabindex="-1">Enviando tus respuestas…</h1><p class="muted">No cierres esta página.</p>';
+    enfocar('h1');
+    var payload = {
+      idIntento: i.id,
+      prueba: i.prueba,
+      version: i.version,
+      token: i.token,
+      perfil: i.perfil,
+      respuestas: i.respuestas,
+      duracionClienteSeg: i.duracionClienteSeg,
+      finalizacion: i.finalizacion
+    };
+    api.entregar(payload).then(function (r) {
+      if (!r || !r.ok) throw r || {};
+      var hechas = leer(sesion, 'hechas') || [];
+      if (hechas.indexOf(i.prueba) < 0) hechas.push(i.prueba);
+      guardar(sesion, 'hechas', hechas);
+      borrarIntento();
+      vistaRecibido(i, r);
+    }).catch(function (e) {
+      app.innerHTML = '<h1 tabindex="-1">No pudimos completar el envío</h1>' +
+        '<div class="notice danger"><p>' + esc(textoError(e)) + '</p>' +
+        '<p>Tus respuestas están guardadas en este dispositivo. Podés reintentar ahora o más tarde desde la pantalla de inicio; no se registrarán dos veces.</p></div>' +
+        '<div class="actions"><button class="btn" data-accion="reintentar">Reintentar envío</button>' +
+        '<button class="btn secondary" data-accion="inicio">Ir al inicio</button></div>';
+      app.onclick = function (ev) {
+        var b = ev.target.closest('button[data-accion]');
+        if (!b) return;
+        if (b.getAttribute('data-accion') === 'reintentar') enviar(); else vistaInicio();
+      };
+      enfocar('h1');
+    });
+  }
+
+  function vistaRecibido(i, r) {
+    var t = prueba(i.prueba);
+    var html = '<h1 tabindex="-1">¡Listo! Recibimos tus respuestas</h1>' +
+      '<div class="notice" role="status"><p><strong>' + esc(t.titulo) + '</strong> entregada' +
+      (i.finalizacion === 'tiempo_agotado' ? ' al agotarse el tiempo' : '') + '.</p>' +
+      '<p>Código de intento: <strong>' + codigoCorto(i.id) + '</strong> <span class="muted">(anónimo; no está asociado a tu identidad)</span></p>' +
+      (r.duplicado ? '<p class="muted">Este envío ya estaba registrado; no se duplicó.</p>' : '') +
+      (r.demo ? '<p class="muted">Modo demostración: no se envió nada.</p>' : '') + '</div>';
+
+    if (r.resultado) {
+      // Solo el porcentaje global: nunca qué preguntas falló ni las respuestas correctas.
+      html += '<section class="card result"><h2 style="margin-top:0">Tu resultado</h2>' +
+        '<p class="result-pct"><span class="big">' + esc(String(r.resultado.porcentaje).replace('.', ',')) + ' %</span> de respuestas correctas</p>' +
+        '<p class="muted">Por tratarse de un diagnóstico, no se informa qué preguntas fueron correctas ni cuáles eran las respuestas.</p>';
+    } else {
+      html += '<p>El equipo docente analizará los resultados de forma agregada y definirá cómo se hace la devolución.</p>';
+    }
+    html += '<div class="actions"><button class="btn" data-accion="inicio">Volver al inicio</button></div>';
+    app.innerHTML = html;
+    app.onclick = function (ev) { if (ev.target.closest('[data-accion=inicio]')) vistaInicio(); };
+    enfocar('h1');
+    anunciar('Prueba recibida.');
+  }
+
+  /* ================================================================
+   * Arranque
+   * ============================================================== */
+  function arrancar() {
+    if (MODO === 'demo') document.getElementById('demo-banner').hidden = false;
+    estado.perfil = leer(sesion, 'perfil');
+    api.config().then(function (c) {
+      if (!c || !c.ok) throw c;
+      if (c.version !== DATA.version) throw { error: 'version_invalida' };
+      estado.config = c;
+      var pendiente = leer(local, 'intento');
+      if (pendiente && pendiente.estado === 'en_curso') {
+        estado.intento = pendiente;
+        vistaPrueba();
+      } else {
+        vistaInicio();
+      }
+    }).catch(function (e) {
+      app.innerHTML = '<h1>No se pudo cargar la aplicación</h1><div class="notice danger"><p>' + esc(textoError(e)) + '</p></div>' +
+        '<div class="actions"><button class="btn" onclick="location.reload()">Reintentar</button></div>';
+    });
+  }
+
+  arrancar();
+})();
+
+</script>
+</body>
+</html>

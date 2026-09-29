@@ -1,0 +1,11 @@
+# Clave de respuestas: NUNCA se sube (el repo es público).
+# Se crea localmente a partir de apps-script/Clave.example.gs.
+apps-script/Clave.gs
+tools/clave_pdf.json
+*.pdf
+
+# Paquetes generados y archivos locales
+dist/
+.claude/
+.DS_Store
+node_modules/
