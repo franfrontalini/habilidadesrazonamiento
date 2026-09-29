@@ -446,7 +446,7 @@
     var i = estado.intento;
     var r = i.respuestas.filter(function (x) { return x; }).length;
     var el = document.getElementById('progreso');
-    if (el) el.textContent = 'Respondidas ' + r + ' de ' + i.respuestas.length;
+    if (el) el.innerHTML = '<span class="prog-label">Respondidas </span>' + r + ' de ' + i.respuestas.length;
   }
 
   function pintarGrilla() {
@@ -678,7 +678,7 @@
     var html = '<h1 tabindex="-1">¡Listo! Recibimos tus respuestas</h1>' +
       '<div class="notice" role="status"><p><strong>' + esc(t.titulo) + '</strong> entregada' +
       (i.finalizacion === 'tiempo_agotado' ? ' al agotarse el tiempo' : '') + '.</p>' +
-      '<p>Código de intento: <strong>' + codigoCorto(i.id) + '</strong> <span class="muted">(anónimo; no está asociado a tu identidad)</span></p>' +
+      '<p>Código de intento: <strong class="codigo-intento">' + codigoCorto(i.id) + '</strong> <span class="muted">(anónimo; no está asociado a tu identidad)</span></p>' +
       (r.duplicado ? '<p class="muted">Este envío ya estaba registrado; no se duplicó.</p>' : '') +
       (r.demo ? '<p class="muted">Modo demostración: no se envió nada.</p>' : '') + '</div>';
 
