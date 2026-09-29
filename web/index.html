@@ -6,11 +6,30 @@
   <!-- URL del web app de Apps Script (/exec). Vacío = modo demostración (no envía nada).
        Al empaquetar para Apps Script (tools/build.mjs) se vacía: allí se usa google.script.run. -->
   <meta name="adm-endpoint" content="https://script.google.com/macros/s/AKfycbxphro7fCM4X6hc3OILZ6rqdETnppSdbJthvHeFShtG07scTrv3sZAgCCoYEf8JAbkT/exec">
-  <title>Diagnóstico de razonamiento · UTN</title>
+  <title>Diagnóstico de razonamiento · UTN FRC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@500;700&family=Noto+Sans:wght@600;700;800&display=swap">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <a class="skip-link" href="#app">Saltar al contenido</a>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <span class="brand">
+        <picture class="logo-extendido">
+          <source srcset="assets/logo-utn-frc-blanco.svg" media="(prefers-color-scheme: dark)">
+          <img src="assets/logo-utn-frc.svg" alt="UTN · Facultad Regional Córdoba" width="127" height="46">
+        </picture>
+        <picture class="logo-reducido">
+          <source srcset="assets/logo-utn-frc-reducido-blanco.svg" media="(prefers-color-scheme: dark)">
+          <img src="assets/logo-utn-frc-reducido.svg" alt="UTN · Facultad Regional Córdoba" width="59" height="38">
+        </picture>
+      </span>
+      <span class="site-title">Diagnóstico de razonamiento</span>
+    </div>
+    <div class="brand-gradient" aria-hidden="true"></div>
+  </header>
   <div id="demo-banner" class="demo-banner" hidden>
     Modo demostración: las respuestas no se envían a ningún servidor.
   </div>

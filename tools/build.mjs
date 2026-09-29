@@ -22,6 +22,11 @@ const link = '<link rel="stylesheet" href="styles.css">';
 if (!html.includes(link)) throw new Error('No se encontró el <link> de styles.css en index.html');
 html = html.replace(link, () => `<style>\n${css}\n</style>`);
 
+// HtmlService sirve un solo archivo: los logos (SVG) se incrustan como data URI.
+html = html.replace(/(src|srcset)="(assets\/[^"]+\.svg)"/g, (_, attr, ruta) =>
+  `${attr}="data:image/svg+xml;base64,${Buffer.from(leer('web/' + ruta)).toString('base64')}"`);
+if (/"assets\//.test(html)) throw new Error('Quedó una referencia a assets/ sin incrustar en Index.html');
+
 // Dentro de Apps Script el transporte es google.script.run: el endpoint queda vacío.
 html = html.replace(/<meta name="adm-endpoint" content="[^"]*">/, '<meta name="adm-endpoint" content="">');
 // HtmlService agrega su propio viewport (addMetaTag en doGet).

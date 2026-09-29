@@ -46,6 +46,14 @@ rama gh-pages                 Contenido de web/ publicado en GitHub Pages
 - **Devolución.** Al entregar, el estudiante ve la confirmación de recepción y **solo su porcentaje de aciertos**. Nunca se le indica qué preguntas acertó o falló ni cuáles eran las respuestas correctas: el servidor no devuelve esa información. Con `mostrar_porcentaje = NO` se muestra solo la confirmación.
 - **Accesibilidad.** Radios nativos: Tab entre controles y flechas para elegir opción. Hay enlace para saltar al contenido, foco que se mueve a cada pregunta, `role="timer"`, avisos `aria-live`, fórmulas con lectura textual para lectores de pantalla, modo oscuro, objetivos táctiles de 44 px y ancho de lectura limitado para los textos largos. En escritorio el material (reglas o texto) queda fijo a la izquierda; en celular aparece arriba y se puede plegar.
 
+## Identidad visual
+
+La interfaz sigue el *Manual de Identidad Visual UTN FRC* (versión reducida, mayo 2026):
+
+- **Logos:** `web/assets/`, extraídos como vectores del manual. Se usa la versión extendida (Facultad) en escritorio y la reducida en celular, en azul, o en blanco en modo oscuro.
+- **Paleta:** Azul UTN FRC `#1538B8` (oscuro `#0B2986`, claro `#D9E5F4`), Celeste Asento `#40C5F2` y los neutros `#191919`, `#E5E5E5` y `#FAFAFA`. Los tokens están al inicio de `web/styles.css`. Los pocos valores que no figuran en el manual están marcados como "derivado" y se eligieron para cumplir el contraste AA.
+- **Tipografías (Google Fonts):** Barlow para textos, Noto Sans para títulos y botones, y JetBrains Mono para información tabulada (temporizador, códigos, numeración).
+
 ## Estructura de la Google Sheet
 
 **`Intentos`**: una fila por entrega.
