@@ -195,7 +195,8 @@ check(!/Session\.get(Active|Effective)User\s*\(|getEmail\s*\(|getTemporaryActive
 const prohibidos = /(nombre|apellido|legajo|dni|documento|correo|email|mail|telefono|usuario|\bip\b)/i;
 check(!S('COLUMNAS_INTENTOS').some((c) => prohibidos.test(c)), 'Columnas de "Intentos" sin campos identificatorios');
 check(!S('COLUMNAS_RESPUESTAS').some((c) => prohibidos.test(c)), 'Columnas de "Respuestas" sin campos identificatorios');
-check(JSON.stringify(S('CLAVES_PERFIL')) === '["anio","especialidad","condicion"]', 'El perfil solo admite año, especialidad y condición');
+check(JSON.stringify(S('CLAVES_PERFIL')) === '["sexo","edad","utn","vinculo","especialidad","anio","nivel"]',
+  'El perfil solo admite sexo, franja etaria, pertenencia y vínculo con la UTN, ingeniería, año y nivel académico');
 const payloadCliente = /var payload = \{([\s\S]*?)\};/.exec(leer('web/app.js'))[1].match(/^\s*(\w+):/gm).map((s) => s.trim().slice(0, -1));
 check(JSON.stringify(payloadCliente) === JSON.stringify(S('CLAVES_ENTREGA')), `El cliente envía exactamente los campos del esquema (${payloadCliente.join(', ')})`);
 const especialidades = S('ESPECIALIDADES_POR_DEFECTO');
@@ -206,6 +207,10 @@ seccion('5. Validación y corrección en el servidor');
 const cfg = S('normalizarConfig_({})');
 check(cfg.mostrar_porcentaje === true && !('mostrar_correccion' in cfg) && !('mostrar_puntaje' in cfg), 'Por defecto se muestra solo el % de aciertos; no existe opción de mostrar corrección');
 check(JSON.stringify(S('PERFIL_ANIOS')) === '["1","2","3","4","5","otro"]', 'Años de cursado: 1.º a 5.º y otro');
+check(JSON.stringify(S('PERFIL_EDADES')) === '["18-24","25-34","35-44","45-54","55-64","65+"]', 'Franjas etarias 18–24 … 65+');
+check(JSON.stringify(S('PERFIL_VINCULOS')) === '["estudiante","graduado","docente","nodocente"]', 'Vínculos con la UTN: estudiante, graduado, docente, nodocente');
+const demoPerfil = /perfil: \{\s*sexos:[\s\S]*?niveles: (\[[^\]]*\])/.exec(appJs);
+check(demoPerfil && JSON.stringify(JSON.parse(demoPerfil[1].replace(/'/g, '"'))) === JSON.stringify(S('PERFIL_NIVELES')), 'Niveles académicos del modo demo iguales a los del servidor');
 check(!/Aeronáutica|Textil|Naval|Pesquera|Telecomunicaciones|Ferroviaria/.test(S('ESPECIALIDADES_POR_DEFECTO').join('|') + appJs),
   'Carreras eliminadas: Aeronáutica, Textil, Naval, Pesquera, Telecomunicaciones y Ferroviaria');
 check(cfg.codigo_cuantitativo === '' , 'Sin código configurado no se puede iniciar (se generan al configurar hojas)');
@@ -214,7 +219,7 @@ const base = (prueba, respuestas) => {
   const idIntento = randomUUID();
   return {
     idIntento, prueba, version: ITEMS.version, token: S(`firmarIntento_('${idIntento}', '${prueba}')`),
-    perfil: { anio: '1', especialidad: especialidades[0], condicion: 'ingresante' },
+    perfil: { sexo: 'femenino', edad: '18-24', utn: 'si', vinculo: 'estudiante', especialidad: especialidades[0], anio: '1', nivel: 'secundario' },
     respuestas, duracionClienteSeg: 100, finalizacion: 'entregado'
   };
 };
@@ -242,8 +247,17 @@ const conDni = base('verbal', Array(17).fill(null)); conDni.perfil.dni = '123';
 check(validar(conDni).error === 'campos_no_permitidos', 'Se rechaza un campo extra (dni) en el perfil');
 check(validar({ ...base('verbal', Array(17).fill(null)), idIntento: 'alumno-juan' }).error === 'id_invalido', 'Se rechaza un id que no sea UUID aleatorio');
 check(validar({ ...base('verbal', Array(17).fill(null)), version: 'otra' }).error === 'version_invalida', 'Se rechaza una versión de contenido distinta');
-const perfilMalo = base('verbal', Array(17).fill(null)); perfilMalo.perfil.anio = '6';
-check(validar(perfilMalo).error === 'perfil_invalido', 'Se rechaza un año fuera de las opciones cerradas');
+const conPerfil = (cambios) => { const d = base('verbal', Array(17).fill(null)); Object.assign(d.perfil, cambios); return validar(d); };
+check(conPerfil({ anio: '6' }).error === 'perfil_invalido', 'Se rechaza un año fuera de las opciones cerradas');
+check(conPerfil({ edad: '17' }).error === 'perfil_invalido', 'Se rechaza una franja etaria fuera de las opciones');
+check(conPerfil({ sexo: 'x' }).error === 'perfil_invalido', 'Se rechaza un sexo fuera de las opciones');
+check(conPerfil({ nivel: '' }).error === 'perfil_invalido', 'El máximo nivel académico es obligatorio');
+check(conPerfil({ utn: 'no', vinculo: '', especialidad: '', anio: '' }).ok, 'Persona externa a la UTN: alcanza con sexo, edad y nivel académico');
+check(conPerfil({ utn: 'no' }).detalle === 'vinculo_sin_utn', 'Persona externa a la UTN: se rechaza si trae vínculo o ingeniería');
+check(conPerfil({ utn: 'si', vinculo: 'docente', especialidad: 'No aplica', anio: '' }).ok, 'Docente de la UTN con ingeniería "No aplica": aceptado, sin año');
+check(conPerfil({ vinculo: 'docente', anio: '3' }).detalle === 'anio_sin_estudiante', 'Solo los estudiantes informan año de cursado');
+check(conPerfil({ vinculo: 'estudiante', anio: '' }).detalle === 'anio', 'Un estudiante de la UTN debe informar el año');
+check(conPerfil({ vinculo: 'rector' }).detalle === 'vinculo', 'Se rechaza un vínculo fuera de las opciones');
 
 /* ---------- 6. Punta a punta con hoja simulada ---------- */
 seccion('6. Envío de punta a punta (hoja simulada)');
@@ -288,6 +302,9 @@ for (const e of envios) {
   check(!!fila, `${e.prueba}: intento guardado en "Intentos"`);
   check(fila[col('puntaje')] === e.esperado && fila[col('omitidas')] === e.omitidas && fila[col('total_items')] === e.n,
     `${e.prueba}: puntaje ${fila[col('puntaje')]}/${e.n} y ${fila[col('omitidas')]} omitidas calculados en el servidor`);
+  check(['sexo', 'franja_etaria', 'pertenece_utn', 'vinculo_utn', 'especialidad', 'anio_cursado', 'nivel_academico']
+    .map((k) => fila[col(k)]).join('|') === ['femenino', '18-24', 'si', 'estudiante', especialidades[0], '1', 'secundario'].join('|'),
+    `${e.prueba}: perfil guardado en sus columnas`);
   check(fila[col('fuente_duracion')] === 'servidor', `${e.prueba}: duración medida por el servidor (inicio registrado)`);
   const suyas = respuestas.filter((f) => f[0] === e.id);
   check(suyas.length === e.n && suyas.map((f) => f[3]).join(',') === Array.from({ length: e.n }, (_, i) => i + 1).join(','),

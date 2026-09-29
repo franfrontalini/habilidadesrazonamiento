@@ -35,7 +35,7 @@ rama gh-pages                 Contenido de web/ publicado en GitHub Pages
 
 ## Cómo funciona
 
-- **Anonimato.** Solo se piden año (1.º, 2.º, 3.º, 4.º, 5.º, otro), carrera (lista cerrada) y condición académica (ingresante, regular, próximo a egresar). El único campo de texto es el código de acceso, que no se guarda. No hay inicio de sesión. Cada intento lleva un UUID v4 aleatorio generado en el navegador. El web app corre como la persona que lo publica, con acceso para *cualquier persona* (anónimo), así que Google no pide cuenta ni entrega el correo del estudiante. El servidor, además, rechaza cualquier campo que no esté en el esquema (`campos_no_permitidos`).
+- **Anonimato.** El perfil tiene solo opciones cerradas: sexo; franja etaria (18–24 … 65+); si pertenece a la UTN y, en ese caso, su vínculo (estudiante, graduado/a, docente, nodocente) y la ingeniería (o "No aplica"); el año de cursado, solo para estudiantes; y el máximo nivel académico alcanzado (para todas las personas). El servidor valida estas condiciones: por ejemplo, rechaza un año si la persona no es estudiante. El único campo de texto es el código de acceso, que no se guarda. No hay inicio de sesión. Cada intento lleva un UUID v4 aleatorio generado en el navegador. El web app corre como la persona que lo publica, con acceso para *cualquier persona* (anónimo), así que Google no pide cuenta ni entrega el correo del estudiante. El servidor, además, rechaza cualquier campo que no esté en el esquema (`campos_no_permitidos`).
 - **Clave solo en el servidor.** `items.js` no contiene respuestas. El navegador envía solo las letras elegidas; el servidor corrige con `Clave.gs`.
 - **Validación en el servidor.** Se valida la sección, la versión del contenido, la cantidad exacta de ítems (20/12/17), la letra de cada ítem (A–D en cuantitativo 1–10, A–E en el resto), el perfil contra las listas cerradas, la duración y el tipo de finalización.
 - **Código de acceso por prueba.** Cada prueba tiene su código en la pestaña `Configuración` (`codigo_cuantitativo`, `codigo_ludico`, `codigo_verbal`). *Configurar hojas* los genera al azar (6 caracteres, sin 0/O/1/I/L) y los muestra; se pueden cambiar cuando quieras y no distinguen mayúsculas. El estudiante lo ingresa en la pantalla de instrucciones. Al tocar *Comenzar*, el servidor lo valida y devuelve un **token firmado (HMAC) para ese intento**. La entrega se acepta solo con ese token. Por eso, cambiar el código a mitad de una toma no afecta a quien ya empezó, y nadie puede entregar sin haber pasado por el código. Ni el código ni el token se guardan en la hoja. Si una prueba no tiene código, no se puede iniciar.
@@ -57,7 +57,7 @@ La interfaz sigue el *Manual de Identidad Visual UTN FRC* (versión reducida, ma
 ## Estructura de la Google Sheet
 
 **`Intentos`**: una fila por entrega.
-`id_intento, prueba, version, recibido_en, iniciado_en_servidor, anio_cursado, especialidad, condicion, duracion_seg, fuente_duracion, duracion_cliente_seg, tiempo_limite_seg, finalizacion, fuera_de_tiempo, total_items, respondidas, omitidas, puntaje, porcentaje, respuestas_cadena, es_prueba`
+`id_intento, prueba, version, recibido_en, iniciado_en_servidor, sexo, franja_etaria, pertenece_utn, vinculo_utn, especialidad, anio_cursado, nivel_academico, duracion_seg, fuente_duracion, duracion_cliente_seg, tiempo_limite_seg, finalizacion, fuera_de_tiempo, total_items, respondidas, omitidas, puntaje, porcentaje, respuestas_cadena, es_prueba`
 
 `respuestas_cadena` guarda las letras elegidas en orden, con `-` para las omitidas (por ejemplo `DDB-A…`).
 
@@ -76,7 +76,7 @@ La interfaz sigue el *Manual de Identidad Visual UTN FRC* (versión reducida, ma
 | `margen_entrega_seg` | 120 | Tolerancia antes de marcar `fuera_de_tiempo` |
 | `especialidades` | lista UTN | Carreras separadas por ` \| `. Ajustala a tu Facultad Regional |
 
-**`Análisis_ítems`** (se genera desde el menú): por ítem muestra dificultad *p* (global y por año, de 1.º a 5.º), tasa de omisión, índice de discriminación D (27 % superior − 27 % inferior), correlación punto-biserial corregida y distribución de opciones elegidas (útil para ver distractores). Excluye las filas con `es_prueba = SI`.
+**`Análisis_ítems`** (se genera desde el menú): por ítem muestra dificultad *p* (global y, para estudiantes, por año de 1.º a 5.º), tasa de omisión, índice de discriminación D (27 % superior − 27 % inferior), correlación punto-biserial corregida y distribución de opciones elegidas (útil para ver distractores). Excluye las filas con `es_prueba = SI`.
 
 ## Instalación paso a paso
 
@@ -117,6 +117,8 @@ Tiene que terminar con `127/127 verificaciones OK`.
    - se rechazan un campo `correo`, una entrega con 19 ítems y una opción E en un ítem de cuatro opciones.
 
    Las filas quedan marcadas `es_prueba = SI`. Podés borrarlas o dejarlas, porque el análisis las excluye.
+
+> **Si cambian las columnas** (por ejemplo, al actualizar el perfil), volvé a ejecutar *Configurar hojas*: las pestañas `Intentos` y `Respuestas` anteriores se renombran como "(anterior …)", sin borrar datos, y se crean vacías con las columnas nuevas.
 
 ### 3. Publicar el web app
 

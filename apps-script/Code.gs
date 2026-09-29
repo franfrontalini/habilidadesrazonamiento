@@ -17,7 +17,7 @@ var HOJA_ANALISIS = 'Análisis_ítems';
 
 var COLUMNAS_INTENTOS = [
   'id_intento', 'prueba', 'version', 'recibido_en', 'iniciado_en_servidor',
-  'anio_cursado', 'especialidad', 'condicion',
+  'sexo', 'franja_etaria', 'pertenece_utn', 'vinculo_utn', 'especialidad', 'anio_cursado', 'nivel_academico',
   'duracion_seg', 'fuente_duracion', 'duracion_cliente_seg', 'tiempo_limite_seg',
   'finalizacion', 'fuera_de_tiempo',
   'total_items', 'respondidas', 'omitidas', 'puntaje', 'porcentaje',
@@ -27,8 +27,14 @@ var COLUMNAS_RESPUESTAS = [
   'id_intento', 'prueba', 'parte', 'pregunta', 'opcion_elegida', 'omitida', 'acierto', 'es_prueba'
 ];
 
+// Opciones cerradas del perfil. El orden es el que ve el estudiante.
+var PERFIL_SEXOS = ['femenino', 'masculino', 'otro', 'prefiero_no_responder'];
+var PERFIL_EDADES = ['18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
+var PERFIL_UTN = ['si', 'no'];
+var PERFIL_VINCULOS = ['estudiante', 'graduado', 'docente', 'nodocente'];
 var PERFIL_ANIOS = ['1', '2', '3', '4', '5', 'otro'];
-var PERFIL_CONDICIONES = ['ingresante', 'regular', 'proximo_a_egresar'];
+var PERFIL_NIVELES = ['secundario', 'terciario', 'universitario', 'especializacion', 'maestria', 'doctorado'];
+var ESPECIALIDAD_NO_APLICA = 'No aplica';
 var ESPECIALIDADES_POR_DEFECTO = [
   'Ingeniería Civil', 'Ingeniería Eléctrica', 'Ingeniería Electromecánica',
   'Ingeniería Electrónica', 'Ingeniería Industrial', 'Ingeniería Mecánica',
@@ -54,7 +60,7 @@ var CONFIG_POR_DEFECTO = [
 ];
 
 var CLAVES_ENTREGA = ['idIntento', 'prueba', 'version', 'token', 'perfil', 'respuestas', 'duracionClienteSeg', 'finalizacion'];
-var CLAVES_PERFIL = ['anio', 'especialidad', 'condicion'];
+var CLAVES_PERFIL = ['sexo', 'edad', 'utn', 'vinculo', 'especialidad', 'anio', 'nivel'];
 var FINALIZACIONES = ['entregado', 'tiempo_agotado'];
 var UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
@@ -105,7 +111,10 @@ function apiConfig() {
     recepcionAbierta: c.recepcion_abierta,
     mostrarPorcentaje: c.mostrar_porcentaje,
     pruebas: pruebas,
-    perfil: { anios: PERFIL_ANIOS, condiciones: PERFIL_CONDICIONES, especialidades: c.especialidades }
+    perfil: {
+      sexos: PERFIL_SEXOS, edades: PERFIL_EDADES, vinculos: PERFIL_VINCULOS, anios: PERFIL_ANIOS,
+      niveles: PERFIL_NIVELES, especialidades: c.especialidades.concat([ESPECIALIDAD_NO_APLICA])
+    }
   };
 }
 
@@ -171,9 +180,13 @@ function entregar_(data, esPrueba) {
       version: e.version,
       recibido_en: ahora,
       iniciado_en_servidor: inicio ? new Date(inicio) : '',
-      anio_cursado: e.perfil.anio,
+      sexo: e.perfil.sexo,
+      franja_etaria: e.perfil.edad,
+      pertenece_utn: e.perfil.utn,
+      vinculo_utn: e.perfil.vinculo,
       especialidad: e.perfil.especialidad,
-      condicion: e.perfil.condicion,
+      anio_cursado: e.perfil.anio,
+      nivel_academico: e.perfil.nivel,
       duracion_seg: duracion,
       fuente_duracion: fuente,
       duracion_cliente_seg: e.duracionClienteSeg,
@@ -230,9 +243,8 @@ function validarEntrega_(d, c) {
   if (!p || typeof p !== 'object' || Array.isArray(p)) return error('perfil_invalido');
   var extraP = Object.keys(p).filter(function (k) { return CLAVES_PERFIL.indexOf(k) < 0; });
   if (extraP.length) return error('campos_no_permitidos', extraP.join(','));
-  if (PERFIL_ANIOS.indexOf(p.anio) < 0) return error('perfil_invalido', 'anio');
-  if (c.especialidades.indexOf(p.especialidad) < 0) return error('perfil_invalido', 'especialidad');
-  if (PERFIL_CONDICIONES.indexOf(p.condicion) < 0) return error('perfil_invalido', 'condicion');
+  var perfil = validarPerfil_(p, c);
+  if (perfil.error) return error('perfil_invalido', perfil.error);
 
   var spec = ESPECIFICACION[d.prueba];
   if (!Array.isArray(d.respuestas) || d.respuestas.length !== spec.items) return error('cantidad_items_invalida');
@@ -254,9 +266,39 @@ function validarEntrega_(d, c) {
     ok: true,
     entrega: {
       idIntento: d.idIntento, prueba: d.prueba, version: d.version,
-      perfil: { anio: p.anio, especialidad: p.especialidad, condicion: p.condicion },
+      perfil: perfil,
       respuestas: respuestas, duracionClienteSeg: Math.round(dur), finalizacion: d.finalizacion
     }
+  };
+}
+
+/**
+ * Perfil con preguntas condicionales:
+ * - Siempre: sexo, franja etaria, pertenencia a la UTN y máximo nivel académico.
+ * - Solo si pertenece a la UTN: vínculo y especialidad (o "No aplica").
+ * - Solo si es estudiante de la UTN: año de cursado.
+ * Lo que no corresponde debe llegar vacío (''). Devuelve el perfil normalizado o {error}.
+ */
+function validarPerfil_(p, c) {
+  function vacio(v) { return v === '' || v === null || v === undefined; }
+  if (PERFIL_SEXOS.indexOf(p.sexo) < 0) return { error: 'sexo' };
+  if (PERFIL_EDADES.indexOf(p.edad) < 0) return { error: 'edad' };
+  if (PERFIL_UTN.indexOf(p.utn) < 0) return { error: 'utn' };
+  if (PERFIL_NIVELES.indexOf(p.nivel) < 0) return { error: 'nivel' };
+  var esUtn = p.utn === 'si';
+  if (esUtn) {
+    if (PERFIL_VINCULOS.indexOf(p.vinculo) < 0) return { error: 'vinculo' };
+    if (c.especialidades.concat([ESPECIALIDAD_NO_APLICA]).indexOf(p.especialidad) < 0) return { error: 'especialidad' };
+  } else if (!vacio(p.vinculo) || !vacio(p.especialidad)) {
+    return { error: 'vinculo_sin_utn' };
+  }
+  var esEstudiante = esUtn && p.vinculo === 'estudiante';
+  if (esEstudiante && PERFIL_ANIOS.indexOf(p.anio) < 0) return { error: 'anio' };
+  if (!esEstudiante && !vacio(p.anio)) return { error: 'anio_sin_estudiante' };
+  return {
+    sexo: p.sexo, edad: p.edad, utn: p.utn,
+    vinculo: esUtn ? p.vinculo : '', especialidad: esUtn ? p.especialidad : '',
+    anio: esEstudiante ? p.anio : '', nivel: p.nivel
   };
 }
 
@@ -422,6 +464,7 @@ function configurarHojas() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   ss.setSpreadsheetTimeZone('America/Argentina/Buenos_Aires');
 
+  var archivadas = archivarSiCambioEsquema_(ss);
   prepararHoja_(ss, HOJA_INTENTOS, COLUMNAS_INTENTOS);
   prepararHoja_(ss, HOJA_RESPUESTAS, COLUMNAS_RESPUESTAS);
 
@@ -448,8 +491,30 @@ function configurarHojas() {
 
   CacheService.getScriptCache().remove('config');
   var c = leerConfig_();
-  avisar_('Hojas listas: Intentos, Respuestas y Configuración.\n\nCódigos de acceso:\n' +
+  avisar_('Hojas listas: Intentos, Respuestas y Configuración.\n\n' +
+    (archivadas ? 'Las columnas cambiaron: los datos anteriores se movieron a "' + archivadas.join('" y "') + '".\n\n' : '') +
+    'Códigos de acceso:\n' +
     Object.keys(ESPECIFICACION).map(function (id) { return '- ' + ESPECIFICACION[id].titulo + ': ' + (c['codigo_' + id] || '(sin código)'); }).join('\n'));
+}
+
+/**
+ * Si "Intentos" tiene encabezados de una versión anterior del perfil, renombra
+ * "Intentos" y "Respuestas" (juntas, para no dejar respuestas huérfanas) y
+ * deja que se creen vacías con el esquema actual. No borra nada.
+ */
+function archivarSiCambioEsquema_(ss) {
+  var hi = ss.getSheetByName(HOJA_INTENTOS);
+  if (!hi || hi.getLastRow() === 0) return null;
+  var actuales = hi.getRange(1, 1, 1, Math.max(hi.getLastColumn(), 1)).getValues()[0]
+    .filter(function (v) { return v !== ''; });
+  if (actuales.join('|') === COLUMNAS_INTENTOS.join('|')) return null;
+  var sufijo = ' (anterior ' + Utilities.formatDate(new Date(), 'America/Argentina/Buenos_Aires', 'yyyy-MM-dd HH.mm') + ')';
+  var nombres = [];
+  [HOJA_INTENTOS, HOJA_RESPUESTAS].forEach(function (n) {
+    var h = ss.getSheetByName(n);
+    if (h) { h.setName(n + sufijo); nombres.push(n + sufijo); }
+  });
+  return nombres;
 }
 
 function prepararHoja_(ss, nombre, columnas) {
@@ -491,7 +556,8 @@ function probarEnvioDePuntaAPunta() {
   if (!ini.ok) errores.push('No se pudo iniciar con el código de la pestaña Configuración: ' + JSON.stringify(ini));
   var payload = {
     idIntento: id, prueba: 'cuantitativo', version: VERSION_PRUEBAS, token: ini.token || '',
-    perfil: { anio: '3', especialidad: c.especialidades[0], condicion: 'regular' },
+    perfil: { sexo: 'prefiero_no_responder', edad: '18-24', utn: 'si', vinculo: 'estudiante',
+      especialidad: c.especialidades[0], anio: '3', nivel: 'secundario' },
     respuestas: resp, duracionClienteSeg: 600, finalizacion: 'entregado'
   };
   var sinToken = JSON.parse(JSON.stringify(payload));
@@ -596,19 +662,21 @@ function auditarDatos() {
 function generarAnalisisItems() {
   var ss = libro_();
   var intentos = ss.getSheetByName(HOJA_INTENTOS).getDataRange().getValues().slice(1)
-    .filter(function (f) { return f[20] !== 'SI'; });
+    .filter(function (f) { return f[COLUMNAS_INTENTOS.indexOf('es_prueba')] !== 'SI'; });
+  var iPrueba = COLUMNAS_INTENTOS.indexOf('prueba'), iCadena = COLUMNAS_INTENTOS.indexOf('respuestas_cadena');
+  var iAnio = COLUMNAS_INTENTOS.indexOf('anio_cursado');
   var enc = ['prueba', 'pregunta', 'parte', 'clave', 'n', 'dificultad_p', 'p_1er_anio', 'p_2do_anio', 'p_3er_anio', 'p_4to_anio', 'p_5to_anio',
     'omision', 'discriminacion_D27', 'r_pbis_corregida', '%A', '%B', '%C', '%D', '%E'];
   var salida = [enc];
 
   Object.keys(ESPECIFICACION).forEach(function (prueba) {
     var spec = ESPECIFICACION[prueba];
-    var filas = intentos.filter(function (f) { return f[1] === prueba; }).map(function (f) {
-      var cad = String(f[19]);
+    var filas = intentos.filter(function (f) { return f[iPrueba] === prueba; }).map(function (f) {
+      var cad = String(f[iCadena]);
       var resp = [];
       for (var i = 0; i < spec.items; i++) resp.push(cad.charAt(i) === '-' ? null : cad.charAt(i));
       var aciertos = resp.map(function (x, i) { return x === CLAVE[prueba][i] ? 1 : 0; });
-      return { anio: String(f[5]), resp: resp, aciertos: aciertos, total: aciertos.reduce(function (a, b) { return a + b; }, 0) };
+      return { anio: String(f[iAnio]), resp: resp, aciertos: aciertos, total: aciertos.reduce(function (a, b) { return a + b; }, 0) };
     });
     var n = filas.length;
     var orden = filas.slice().sort(function (a, b) { return b.total - a.total; });
