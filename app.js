@@ -11,8 +11,15 @@
   var AVISOS_SEG = [300, 60];
 
   var PERFIL_TEXTOS = {
+    sexos: { femenino: 'Femenino', masculino: 'Masculino', otro: 'Otro', prefiero_no_responder: 'Prefiero no responder' },
+    edades: { '18-24': '18–24', '25-34': '25–34', '35-44': '35–44', '45-54': '45–54', '55-64': '55–64', '65+': '65 o más' },
+    utn: { si: 'Sí', no: 'No' },
+    vinculos: { estudiante: 'Estudiante', graduado: 'Graduado/a', docente: 'Docente', nodocente: 'Nodocente' },
     anios: { '1': '1.º año', '2': '2.º año', '3': '3.º año', '4': '4.º año', '5': '5.º año', otro: 'Otro' },
-    condiciones: { ingresante: 'Ingresante', regular: 'Estudiante regular', proximo_a_egresar: 'Próximo a egresar' }
+    niveles: {
+      secundario: 'Secundario', terciario: 'Terciario / técnico superior', universitario: 'Universitario de grado',
+      especializacion: 'Especialización', maestria: 'Maestría', doctorado: 'Doctorado'
+    }
   };
 
   // Valores usados solo en modo demostración; con servidor manda apiConfig().
@@ -27,13 +34,16 @@
       verbal: { habilitada: true, minutos: 40, items: 17 }
     },
     perfil: {
+      sexos: ['femenino', 'masculino', 'otro', 'prefiero_no_responder'],
+      edades: ['18-24', '25-34', '35-44', '45-54', '55-64', '65+'],
+      vinculos: ['estudiante', 'graduado', 'docente', 'nodocente'],
       anios: ['1', '2', '3', '4', '5', 'otro'],
-      condiciones: ['ingresante', 'regular', 'proximo_a_egresar'],
+      niveles: ['secundario', 'terciario', 'universitario', 'especializacion', 'maestria', 'doctorado'],
       especialidades: [
         'Ingeniería Civil', 'Ingeniería Eléctrica', 'Ingeniería Electromecánica',
         'Ingeniería Electrónica', 'Ingeniería Industrial', 'Ingeniería Mecánica',
         'Ingeniería Metalúrgica', 'Ingeniería Química',
-        'Ingeniería en Sistemas de Información', 'Otra'
+        'Ingeniería en Sistemas de Información', 'Otra', 'No aplica'
       ]
     }
   };
@@ -131,7 +141,34 @@
   function prueba(id) { return DATA.pruebas[id]; }
   function cfgPrueba(id) { return estado.config.pruebas[id]; }
   function codigoCorto(id) { return id.slice(0, 8).toUpperCase(); }
-  function perfilCompleto(p) { return p && p.anio && p.especialidad && p.condicion; }
+  function perfilCompleto(p) {
+    if (!p || !p.sexo || !p.edad || !p.utn || !p.nivel) return false;
+    if (p.utn === 'no') return true;
+    return !!(p.vinculo && p.especialidad && (p.vinculo !== 'estudiante' || p.anio));
+  }
+  // Filas "dato: valor" del perfil, solo con lo que corresponde.
+  function resumenPerfil(p) {
+    var filas = [
+      ['Sexo', PERFIL_TEXTOS.sexos[p.sexo]],
+      ['Franja etaria', PERFIL_TEXTOS.edades[p.edad]],
+      ['¿De la UTN?', PERFIL_TEXTOS.utn[p.utn]]
+    ];
+    if (p.utn === 'si') {
+      filas.push(['Vínculo', PERFIL_TEXTOS.vinculos[p.vinculo]]);
+      filas.push(['Ingeniería', p.especialidad]);
+      if (p.vinculo === 'estudiante') filas.push(['Año', PERFIL_TEXTOS.anios[p.anio]]);
+    }
+    filas.push(['Nivel académico', PERFIL_TEXTOS.niveles[p.nivel]]);
+    return filas.map(function (f) { return '<dt>' + esc(f[0]) + '</dt><dd>' + esc(f[1] || '') + '</dd>'; }).join('');
+  }
+  function grupoChips(nombre, leyenda, valores, textos, actual, ayuda) {
+    return '<fieldset><legend>' + esc(leyenda) + '</legend>' +
+      (ayuda ? '<p class="muted ayuda">' + esc(ayuda) + '</p>' : '') + '<div class="choice-row">' +
+      valores.map(function (v) {
+        return '<label class="chip"><input type="radio" name="' + nombre + '" value="' + esc(v) + '"' +
+          (actual === v ? ' checked' : '') + '><span>' + esc(textos[v] || v) + '</span></label>';
+      }).join('') + '</div></fieldset>';
+  }
   function textoError(e) {
     var codigos = {
       recepcion_cerrada: 'La recepción de pruebas está cerrada en este momento.',
@@ -187,8 +224,8 @@
     var pendiente = leer(local, 'intento');
 
     var html = '<h1>Diagnóstico de razonamiento</h1>' +
-      '<div class="notice"><p><strong>¿Para qué es?</strong> Estas pruebas se usan con fines diagnósticos, para conocer cómo razonan estudiantes de Ingeniería de la UTN en distintos momentos de la carrera. <strong>No son evaluaciones de ninguna materia ni afectan tu condición académica.</strong></p>' +
-      '<p><strong>Es anónimo.</strong> No pedimos nombre, legajo, DNI ni correo, y no hace falta iniciar sesión. Solo registramos tu año, carrera y condición académica, tus respuestas y el tiempo empleado. Cada intento se identifica con un código aleatorio. Los resultados se analizan de forma agregada.</p></div>';
+      '<div class="notice"><p><strong>¿Para qué es?</strong> Estas pruebas se usan con fines diagnósticos, para conocer habilidades de razonamiento en la comunidad de la UTN FRC y en otros grupos. <strong>No son evaluaciones de ninguna materia y no afectan tu situación académica ni laboral.</strong></p>' +
+      '<p><strong>Es anónimo.</strong> No pedimos nombre, legajo, DNI ni correo, y no hace falta iniciar sesión. Solo registramos datos generales de perfil (sexo, franja etaria, vínculo con la UTN, ingeniería, año y nivel académico), tus respuestas y el tiempo empleado. Cada intento se identifica con un código aleatorio. Los resultados se analizan de forma agregada.</p></div>';
 
     if (!c.recepcionAbierta) {
       html += '<div class="notice warn"><p>La recepción de pruebas está cerrada en este momento.</p></div>';
@@ -203,21 +240,25 @@
         '</div>';
     }
 
+    var pf = c.perfil, T = PERFIL_TEXTOS;
     html += '<section class="card" aria-labelledby="perfil-h"><h2 id="perfil-h" style="margin-top:0">Tus datos de perfil</h2>' +
-      '<p class="muted">Solo estos tres datos, para analizar resultados por grupo.</p>' +
-      '<fieldset><legend>Año de cursado</legend><div class="choice-row">' +
-      c.perfil.anios.map(function (a) {
-        return '<label class="chip"><input type="radio" name="anio" value="' + esc(a) + '"' + (p.anio === a ? ' checked' : '') + '><span>' + esc(PERFIL_TEXTOS.anios[a] || a) + '</span></label>';
-      }).join('') + '</div></fieldset>' +
-      '<fieldset><legend><label for="especialidad">Especialidad o carrera de Ingeniería</label></legend>' +
-      '<select id="especialidad" name="especialidad"><option value="">Elegí una opción</option>' +
-      c.perfil.especialidades.map(function (e) {
-        return '<option' + (p.especialidad === e ? ' selected' : '') + '>' + esc(e) + '</option>';
-      }).join('') + '</select></fieldset>' +
-      '<fieldset><legend>Condición académica</legend><div class="choice-row">' +
-      c.perfil.condiciones.map(function (k) {
-        return '<label class="chip"><input type="radio" name="condicion" value="' + esc(k) + '"' + (p.condicion === k ? ' checked' : '') + '><span>' + esc(PERFIL_TEXTOS.condiciones[k] || k) + '</span></label>';
-      }).join('') + '</div></fieldset>' +
+      '<p class="muted">Datos generales para analizar los resultados por grupo. Todas las opciones son cerradas.</p>' +
+      grupoChips('sexo', 'Sexo', pf.sexos, T.sexos, p.sexo) +
+      grupoChips('edad', 'Franja etaria', pf.edades, T.edades, p.edad) +
+      grupoChips('utn', '¿Pertenecés a la UTN?', ['si', 'no'], T.utn, p.utn) +
+      '<div id="bloque-utn" class="bloque-condicional"' + (p.utn === 'si' ? '' : ' hidden') + '>' +
+        grupoChips('vinculo', '¿Cuál es tu vínculo con la UTN?', pf.vinculos, T.vinculos, p.vinculo) +
+        '<fieldset><legend><label for="especialidad">Ingeniería a la que pertenecés</label></legend>' +
+        '<p class="muted ayuda">Si tu vínculo no corresponde a una ingeniería, elegí "No aplica".</p>' +
+        '<select id="especialidad" name="especialidad"><option value="">Elegí una opción</option>' +
+        pf.especialidades.map(function (e) {
+          return '<option' + (p.especialidad === e ? ' selected' : '') + '>' + esc(e) + '</option>';
+        }).join('') + '</select></fieldset>' +
+        '<div id="bloque-anio" class="bloque-condicional"' + (p.utn === 'si' && p.vinculo === 'estudiante' ? '' : ' hidden') + '>' +
+          grupoChips('anio', '¿Qué año estás cursando?', pf.anios, T.anios, p.anio) +
+        '</div>' +
+      '</div>' +
+      grupoChips('nivel', 'Máximo nivel académico alcanzado', pf.niveles, T.niveles, p.nivel, 'El último nivel que completaste.') +
       '<p id="perfil-estado" class="muted" aria-live="polite"></p></section>';
 
     html += '<section aria-labelledby="pruebas-h"><h2 id="pruebas-h">Elegí una prueba</h2>' +
@@ -240,19 +281,28 @@
 
     app.innerHTML = html;
 
+    function valor(nombre) {
+      var el = app.querySelector('input[name=' + nombre + ']:checked');
+      return el ? el.value : '';
+    }
     function actualizarPerfil() {
-      var anio = app.querySelector('input[name=anio]:checked');
-      var cond = app.querySelector('input[name=condicion]:checked');
+      var utn = valor('utn'), vinculo = valor('vinculo');
+      var esUtn = utn === 'si', esEstudiante = esUtn && vinculo === 'estudiante';
+      app.querySelector('#bloque-utn').hidden = !esUtn;
+      app.querySelector('#bloque-anio').hidden = !esEstudiante;
+      // Solo se guarda lo que corresponde según las respuestas anteriores.
       estado.perfil = {
-        anio: anio ? anio.value : '',
-        especialidad: app.querySelector('#especialidad').value,
-        condicion: cond ? cond.value : ''
+        sexo: valor('sexo'), edad: valor('edad'), utn: utn,
+        vinculo: esUtn ? vinculo : '',
+        especialidad: esUtn ? app.querySelector('#especialidad').value : '',
+        anio: esEstudiante ? valor('anio') : '',
+        nivel: valor('nivel')
       };
       guardar(sesion, 'perfil', estado.perfil);
       app.querySelector('#perfil-estado').textContent = perfilCompleto(estado.perfil)
-        ? 'Perfil completo.' : 'Completá los tres datos para poder ingresar a una prueba.';
+        ? 'Perfil completo.' : 'Completá los datos de perfil para poder ingresar a una prueba.';
     }
-    app.querySelectorAll('input[name=anio], input[name=condicion], #especialidad').forEach(function (el) {
+    app.querySelectorAll('#perfil-h ~ fieldset input, #perfil-h ~ div input, #especialidad').forEach(function (el) {
       el.addEventListener('change', actualizarPerfil);
     });
     actualizarPerfil();
@@ -263,7 +313,7 @@
       var acc = b.getAttribute('data-accion');
       if (acc === 'abrir') {
         if (!perfilCompleto(estado.perfil)) {
-          app.querySelector('#perfil-estado').textContent = 'Antes de ingresar, completá año, carrera y condición académica.';
+          app.querySelector('#perfil-estado').textContent = 'Antes de ingresar, completá todos los datos de perfil.';
           enfocar('#perfil-h');
           anunciar('Completá los datos de perfil antes de ingresar.', true);
           return;
@@ -313,9 +363,7 @@
       '<li><strong>Al agotarse el tiempo, la prueba se entrega automáticamente</strong> con las respuestas marcadas hasta ese momento. Las que no respondiste quedan como omitidas y ya no podrás modificar nada.</li>' +
       '</ul></section>' +
       '<section class="card"><h2 style="margin-top:0">Tu perfil</h2><dl class="facts">' +
-      '<dt>Año</dt><dd>' + esc(PERFIL_TEXTOS.anios[p.anio]) + '</dd>' +
-      '<dt>Carrera</dt><dd>' + esc(p.especialidad) + '</dd>' +
-      '<dt>Condición</dt><dd>' + esc(PERFIL_TEXTOS.condiciones[p.condicion]) + '</dd></dl>' +
+      resumenPerfil(p) + '</dl>' +
       '<p class="muted">Si algo no es correcto, volvé y cambialo antes de comenzar.</p></section>' +
       '<form class="card" id="form-codigo" novalidate><h2 style="margin-top:0"><label for="codigo-acceso">Código de acceso</label></h2>' +
       '<p class="muted" id="codigo-ayuda">Lo da el equipo docente al comenzar la toma. No distingue mayúsculas de minúsculas.' +
@@ -359,7 +407,10 @@
       id: uuidv4(),
       prueba: id,
       version: DATA.version,
-      perfil: { anio: estado.perfil.anio, especialidad: estado.perfil.especialidad, condicion: estado.perfil.condicion },
+      perfil: {
+        sexo: estado.perfil.sexo, edad: estado.perfil.edad, utn: estado.perfil.utn, vinculo: estado.perfil.vinculo,
+        especialidad: estado.perfil.especialidad, anio: estado.perfil.anio, nivel: estado.perfil.nivel
+      },
       limiteSeg: cp.minutos * 60,
       inicioMs: null,
       respuestas: prueba(id).items.map(function () { return null; }),
